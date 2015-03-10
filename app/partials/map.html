@@ -1,0 +1,8 @@
+<ui-gmap-google-map
+    center="map.center"
+    zoom="map.zoom"
+    options="map.options"
+    pan="true"
+    control="map.control">
+    <ui-gmap-map-type ng-repeat="o in map.overlayMapTypes track by o.id" options="o.options" show="o.show" refresh="o.refresh"></ui-gmap-map-type>
+</ui-gmap-google-map>

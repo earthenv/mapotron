@@ -1,0 +1,38 @@
+application: map-of-life
+version: mapotron
+runtime: python27
+threadsafe: true
+api_version: 1
+
+inbound_services:
+- warmup
+
+builtins:
+- remote_api: on
+
+handlers:
+
+- url: /api/tile/.*
+  script: tile_handler.application
+
+- url: /bower_components
+  static_dir: bower_components
+
+- url: /app
+  static_dir: app
+
+# Boots the angular application
+
+- url: /.*
+  script: ng.application
+
+- url: /
+  script: ng.application
+
+
+libraries:
+- name: pycrypto
+  version: "2.3"
+
+- name: jinja2
+  version: "2.6"

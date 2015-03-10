@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en" ng-app="mapotron">
+<head>
+  <meta charset="utf-8">
+  <title ng-bind="$state.current.title"></title>
+  <link rel="stylesheet" href="/app/css/mapotron.css"/>
+  <base href="/">
+  <script type="text/javascript">
+    var layers = {{layers|safe}};
+  </script>
+</head>
+<body>
+  <div ui-view></div>
+  <script src="http://maps.googleapis.com/maps/api/js?sensor=false&language=en&v=3.exp"></script>
+{% if PROD %}
+  <script src="app/js/app.min.js"></script>
+{% else %}
+  <script src="/bower_components/angular/angular.min.js"></script>
+  <script src="/bower_components/angular-ui-router/release/angular-ui-router.js"></script>
+  <script src='/bower_components/lodash/dist/lodash.min.js'></script>
+  <script src='/bower_components/angular-google-maps/dist/angular-google-maps.js'></script>
+  <script src="/app/js/helpers.js"></script>
+  <script src="/app/js/app.js"></script>
+  <script src="/app/js/controllers.js"></script>
+{% endif %}
+</body>
+</html>

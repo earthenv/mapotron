@@ -1,0 +1,8 @@
+*.pyc
+config_creds.py
+privatekey.pem
+bower_components/
+node_modules/
+httplib2/
+oauth2client/
+ee/

@@ -1,0 +1,11 @@
+<div class="map_legend">
+    <input type="checkbox" ng-model="showLegend" ng-init="showLegend=true" selected> Show legend
+    <div ng-show="showLegend">
+      <img
+        ng-repeat="layer in map.overlayMapTypes track by layer.id"
+        ng-show="layer.show"
+        class="legend_img"
+        alt="No legend available"
+        src="/app/img/legend/{{layer.id}}.png"></img>
+    </div>
+</div>

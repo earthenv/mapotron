@@ -1,0 +1,21 @@
+"""
+   Module to store service account configuration. 
+   Enter your service account here and privatekey.pem location and rename to
+   config_creds.py <- This and the private key file should be in gitignore 
+   so you do not commit your service  account info or private key to 
+   public repositories!
+"""
+
+__author__ = "Jeremy Malczyk"
+
+import os
+
+#Global EE variables
+EE_URL = 'https://earthengine.googleapis.com'
+EE_ACCOUNT = 'your-service-account@developer.gserviceaccount.com'
+EE_PRIVATE_KEY_FILE = 'privatekey.pem'
+
+# DEBUG_MODE will be True if running in a local development environment.
+DEBUG_MODE = ('SERVER_SOFTWARE' in os.environ and
+              os.environ['SERVER_SOFTWARE'].startswith('Dev'))
+

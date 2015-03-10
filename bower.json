@@ -1,0 +1,13 @@
+{
+  "name": "mapotron",
+  "description": "Generic EarthEngine Map Visualizer",
+  "version": "0.0.1",
+  "homepage": "https://github.com/MapofLife/ng-mol",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "angular": "~1.2.18",
+    "angular-ui-router": "~0.2.11",
+    "angular-google-maps": "~2.0.7"
+  }
+}
