@@ -1,4 +1,4 @@
-application: map-of-life
+application: my-appengine-app
 version: mapotron
 runtime: python27
 threadsafe: true
