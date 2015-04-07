@@ -6,7 +6,8 @@ angular.module('mapotron.controllers')
 
       $rootScope.$state = $state;
       $scope.max=0.5;
-      $scope.showLegend = true
+      $scope.showLegend = true;
+      $scope.hasLengend = false;
       $scope.showControls = true;
       $scope.map = {
             center: {latitude:0,longitude:0},
@@ -77,7 +78,7 @@ angular.module('mapotron.controllers')
                         },
                         tileSize: new google.maps.Size(256, 256),
                         name: layer,
-                        opacity: 1,
+                        opacity: 0.7,
                         maxZoom: 18
                       },
                       id: layer,

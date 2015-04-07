@@ -27,7 +27,7 @@ class BaseHandler(webapp2.RequestHandler):
 
 class ngMOL(BaseHandler):
     def get(self):
-        self.render_template('index.html', {"layers" : ee_assets.layers.keys()})
+        self.render_template('index.html', {"layers" : ee_assets.layers.keys(), "PROD": PROD})
     def post(self):
         self.push_html('index.html')
 

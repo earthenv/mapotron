@@ -4,8 +4,11 @@
         <tr ng-repeat="layer in map.overlayMapTypes track by layer.id">
             <td valign="center"><input type="checkbox" ng-model="layer.show"></td>
             <td valign="center">{{layer.id}}</td>
-            <td valign="center"><input class="opacity-slider" type="range" ng-model-options="{ getterSetter: true }" min=0 max=1 step="any" 
-            ng-model="layer.opacity"></td>
+            <td valign="center"><input
+                class="opacity-slider" type="range"
+                data-ng-model="layer.opacity"
+                data-ng-model-options="{getterSetter: true }" min=0 max=1 step="any"
+              ></td>
         </tr>
     </table>
 </div>

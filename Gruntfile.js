@@ -9,14 +9,15 @@ module.exports = function(grunt) {
       },
       build: {
         src: [
-           'app/js/helpers.js',
-	   'bower_components/angular/angular.min.js',
-	   'bower_components/angular-ui-router/release/angular-ui-router.js',
-	   'bower_components/lodash/dist/lodash.min.js',
+
+      	   'bower_components/angular/angular.min.js',
+      	   'bower_components/angular-ui-router/release/angular-ui-router.js',
+      	   'bower_components/lodash/dist/lodash.min.js',
            'bower_components/angular-google-maps/dist/angular-google-maps.js',
+           'app/js/helpers.js',
            'app/js/app.js',
            'app/js/controllers.js'],
-        dest: 'app/app.min.js'
+        dest: 'app/js/app.min.js'
       }
     }
   });
@@ -28,4 +29,3 @@ module.exports = function(grunt) {
   grunt.registerTask('default', ['uglify']);
 
 };
-

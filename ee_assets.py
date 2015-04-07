@@ -19,30 +19,31 @@ PALETTES = dict(
 	bgr = "0000ff,00ff00,ff0000",
 	spatial = "ffffff,0000ff,00ff00,ff0000,ff0000")
 
+
+palette = PALETTES["spatial"]
 # Monthly Layers
-layers = OrderedDict(
-    Layer_One= {
-        "title" : "The first layer",
-    	"asset_id" : "GME/images/some-imageid",
-    	"viz_params" : {
-    		"min": 0, "max": 2000,
-    		"palette": PALETTES["spatial"]
-        }
-    },
-    Another_Layer = {
-        "title" : "Another layer...",
-    	"asset_id" : "GME/images/another-imageid",
-    	"viz_params" : {
-    		"min": 0, "max": 1500,
-    		"palette" : PALETTES["bgr"]
-        }
-    },
-    You_get_the_point = {
-        "title" : "You get the point",
-    	"asset_id" : "GME/images/yetonemore-imageid",
-    	"viz_params" : {
-    		"min": 0, "max": 2500,
-    		"palette": PALETTES["blue"]
-        }
+layers = OrderedDict()
+layers["Layer_One"]= {
+    "title" : "The first layer",
+	"asset_id" : "GME/images/some-imageid",
+	"viz_params" : {
+		"min": 0, "max": 2000,
+		"palette": PALETTES["spatial"]
     }
-)
+}
+layers["Another_Layer"] = {
+    "title" : "Another layer...",
+	"asset_id" : "GME/images/another-imageid",
+	"viz_params" : {
+		"min": 0, "max": 1500,
+		"palette" : PALETTES["bgr"]
+    }
+}
+layers["You_get_the_point"] = {
+    "title" : "You get the point",
+	"asset_id" : "GME/images/yetonemore-imageid",
+	"viz_params" : {
+		"min": 0, "max": 2500,
+		"palette": PALETTES["blue"]
+    }
+}
