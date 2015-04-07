@@ -3,7 +3,7 @@
     <table ng-show="showControls">
         <tr ng-repeat="layer in map.overlayMapTypes track by layer.id">
             <td valign="center"><input type="checkbox" ng-model="layer.show"></td>
-            <td valign="center">{{layer.id}}</td>
+            <td valign="center">{{layer.title}}</td>
             <td valign="center"><input
                 class="opacity-slider" type="range"
                 data-ng-model="layer.opacity"

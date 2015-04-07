@@ -81,7 +81,8 @@ angular.module('mapotron.controllers')
                         opacity: 0.7,
                         maxZoom: 18
                       },
-                      id: layer,
+                      id: layer.id,
+                      title: layer.title,
                       show: false,
                       refresh: true,
                       opacity: function(_opacity) {
