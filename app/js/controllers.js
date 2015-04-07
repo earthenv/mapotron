@@ -74,7 +74,7 @@ angular.module('mapotron.controllers')
                       options: {
                         getTileUrl : function (coords, zoom) {
                           return '/api/tile/{0}/{1}/{2}/{3}.png'
-                            .format(layer,zoom,coords.x,coords.y);
+                            .format(layer.id,zoom,coords.x,coords.y);
                         },
                         tileSize: new google.maps.Size(256, 256),
                         name: layer,
