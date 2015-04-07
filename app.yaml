@@ -24,10 +24,10 @@ handlers:
 # Boots the angular application
 
 - url: /.*
-  script: ng.application
+  script: mapotron.application
 
 - url: /
-  script: ng.application
+  script: mapotron.application
 
 
 libraries:

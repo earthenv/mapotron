@@ -25,7 +25,7 @@ class BaseHandler(webapp2.RequestHandler):
         path = os.path.join(os.path.dirname(__file__), "server_templates", f)
         self.response.out.write(open(path, 'r').read())
 
-class ngMOL(BaseHandler):
+class MapOTron(BaseHandler):
     def get(self):
 
 	layers = []
@@ -36,9 +36,9 @@ class ngMOL(BaseHandler):
         self.push_html('index.html')
 
 application = webapp2.WSGIApplication(
-         [ 
-          ('/.*',ngMOL),
-          ('/', ngMOL)
+         [
+          ('/.*',MapOTron),
+          ('/', MapOTron)
           ],
          debug=True)
 
