@@ -16,8 +16,9 @@ from google.appengine.api import images
 from google.appengine.api import urlfetch
 
 EE_TILE_URL = 'https://earthengine.googleapis.com/map/%s/%i/%i/%i?token=%s'
-MAP_KEY = 'mymapkey_%s' #map configs will be stored behind this key prefix
-TILE_KEY = 'mytilekey_%s' #tile blobs will be stored behind this key prefix
+MASTER_KEY = 'streams_04072015'
+MAP_KEY = MASTER_KEY + '_map_%s' #map configs will be stored behind this key prefix
+TILE_KEY = MASTER_KEY + '_tile_%s' #tile blobs will be stored behind this key prefix
 
 class TileHandler(webapp2.RequestHandler):
     def checkCoords(self, z,x,y):
@@ -72,7 +73,7 @@ class TileHandler(webapp2.RequestHandler):
                 import ee
                 import ee_services
 
-
+                
                 logging.info('No tile meta, generating new map from %s ' % (ee_assets.layers[key]["asset_id"]))
 
                 tile_meta = ee_services.getMap(
