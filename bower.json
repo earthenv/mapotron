@@ -2,7 +2,7 @@
   "name": "mapotron",
   "description": "Generic EarthEngine Map Visualizer",
   "version": "0.0.1",
-  "homepage": "https://github.com/MapofLife/ng-mol",
+  "homepage": "https://github.com/EarthEnv/mapotron",
   "license": "MIT",
   "private": true,
   "dependencies": {
