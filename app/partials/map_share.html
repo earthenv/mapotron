@@ -1,0 +1,7 @@
+<div class="map_share" ng-controller="shareCtrl">
+  <div class="g-plus" data-action="share"></div>
+  <i
+    ng-repeat="feed in feeds"
+    class="clickable fa {{feed.icon}} fa-2x"
+    ng-click="share(feed)"></i>
+</div>

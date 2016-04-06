@@ -1,0 +1,8 @@
+<div class="map_controls" ng-controller="windowCtrl">
+  <div ng-repeat="
+    (layer, bands) in parameter.model track by layer">
+    <strong>{{layer}}</strong>&nbsp;:&nbsp;<span
+      ng-repeat="(band, value) in bands">{{value | number}}{{(!$last)?',&nbsp;':''}}</span>
+  </div>
+  <i class="fa fa-refresh fa-spin" ng-show="working"></i>
+</div>

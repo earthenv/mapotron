@@ -1,8 +1,55 @@
+<script type="text/ng-template" id="searchbox.tpl.html">
+       <input type="text" placeholder="Search Box">
+</script>
 <ui-gmap-google-map
+
+    class="gmap"
     center="map.center"
     zoom="map.zoom"
     options="map.options"
     pan="true"
+    events="map.events"
     control="map.control">
-    <ui-gmap-map-type ng-repeat="o in map.overlayMapTypes track by o.id" options="o.options" show="o.show" refresh="o.refresh"></ui-gmap-map-type>
+    <ui-gmap-markers
+        models="map.windows"
+        show="'show'"
+        coords="'self'"
+        options="'options'"
+        templateUrl="'templateUrl'"
+        templateParameter="'data'"
+        ></ui-gmap-windows>
+
+    <ui-gmap-map-control
+             template="app/partials/map_infotable.html"
+             position="right-top"
+             index="-5"></ui-gmap-map-control>
+    <ui-gmap-map-control
+         template="app/partials/map_logos.html"
+         position="bottom-center"
+         index="-4"></ui-gmap-map-control>
+     <ui-gmap-map-control
+      template="app/partials/map_controls.html"
+      position="top-left"
+      controller="controlCtrl"
+      index="-2"></ui-gmap-map-control>
+    <ui-gmap-map-control
+       template="app/partials/map_legend.html"
+       position="right-bottom"
+       index="-1"></ui-gmap-map-control>
+    <ui-gmap-map-control
+        template="app/partials/map_places.html"
+        position="top-right"
+        index="3"></ui-gmap-map-control>
+    <ui-gmap-map-control
+             template="app/partials/map_share.html"
+             position="bottom-left"
+             index="2"></ui-gmap-map-control>
+    <!--<ui-gmap-search-box
+      template="searchbox.template"
+      events="map.events"></ui-gmap-search-box>-->
+    <ui-gmap-map-type
+      ng-repeat="o in map.overlayMapTypes track by o.id"
+      options="o.options"
+      show="o.show"
+      refresh="o.refresh"></ui-gmap-map-type>
 </ui-gmap-google-map>

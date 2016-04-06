@@ -1,14 +1,30 @@
-<div class="map_controls">
-    <input type="checkbox" ng-model="showControls" selected> Show layers
-    <table ng-show="showControls">
-        <tr ng-repeat="layer in map.overlayMapTypes track by layer.id">
-            <td valign="center"><input type="checkbox" ng-model="layer.show"></td>
-            <td valign="center">{{layer.title}}</td>
-            <td valign="center"><input
-                class="opacity-slider" type="range"
-                data-ng-model="layer.opacity"
-                data-ng-model-options="{getterSetter: true }" min=0 max=1 step="any"
-              ></td>
-        </tr>
-    </table>
+<div ng-controller="controlCtrl" class="map_controls noselect">
+    <div style="display:flex;display:-webkit-flex;">
+      <div uib-tooltip="Click to toggle layer controls."
+        tooltip-placement="right"
+        style="padding:4px;">
+        <strong>
+          <i class="fa fa-bars clickable " ng-click="s=!s"></i>
+        </strong>
+      </div>
+      <div style="padding:4px;">
+        Global&nbsp;1-km&nbsp;Cloud&nbsp;Cover
+      </div>
+    </div>
+    <div
+      ng-model=" $root.map.overlayMapTypes " uib-collapse="s" >
+      <div style="display:flex;display:-webkit-flex;" ng-repeat="
+          layer in $root.map.overlayMapTypes">
+        <div ng-click="layer.show = !layer.show"
+          style="flex:3;-webkit-flex:3;padding:4px;padding-left:4px;"
+          class="clickable"
+          ng-class="{'selected': layer.show}">
+          {{layer.options.name}}</div>
+          <div style="flex:2;--webkit-flex:2;padding:4px 0;"><input
+              class="opacity-slider" type="range"
+              min=0 max=1 step="any"
+              ng-model-options="{getterSetter: true}"
+              ng-model="layer.setOpacity"/><div>
+      </div>
+    </div>
 </div>

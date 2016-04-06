@@ -4,17 +4,29 @@ angular.module('mapotron.controllers',[]);
 
 // Declare app level module which depends on filters, and services
 angular.module('mapotron', [
+  'ngAnimate',
+  'as.sortable',
+  'mapotron.directives',
   'mapotron.controllers',
   'ui.router',
-  'uiGmapgoogle-maps'
-])
+  'angular.filter',
+  'ui.bootstrap',
+  'uiGmapgoogle-maps',
+  'env-filters'
+]).config(function(uiGmapGoogleMapApiProvider) {
+    uiGmapGoogleMapApiProvider.configure({
+        key: 'AIzaSyByw04NVoEsh8bfC0X_sBBA5_-pAovcD1c',
+        v: '3.23', //defaults to latest 3.X anyhow
+        libraries: 'places,weather,geometry,visualization'
+    });
+})
 .config(function($stateProvider, $urlRouterProvider, $locationProvider) {
 
-  $urlRouterProvider.otherwise("/");
+  $urlRouterProvider.otherwise("/3/0/0");
 
   $stateProvider
     .state(
-      'map',
+      'map', //this view contains the bones of the Species Info pages (name, pic, & search bar)
       {
         abstract: true,
         templateUrl: 'app/partials/mapotron.html',
@@ -29,7 +41,7 @@ angular.module('mapotron', [
           'controls': {templateUrl: 'app/partials/map_controls.html'},
           'legend': {templateUrl: 'app/partials/map_legend.html'}
         },
-        url: '/'
+        url: '/{z}/{x}/{y}?layers&markers&basemap&embed'
       }
     )
     //Gets rid of the # in the querystring. Wont work on IE

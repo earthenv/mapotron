@@ -1,0 +1,50 @@
+<div ng-controller="tableCtrl" ng-show="$root.map.windows.length+($root.map.windows.overlayMapTypes | filter:{show:true}).length " class="map_infotable" ng-controller="tableCtrl">
+  <i ng-click="s=!s" class="fa fa-table fa-pull-right clickable"></i>
+  <div uib-collapse="s">
+    <table class="table-striped" cellpadding="4" cellspacing="4" cellwidth="50">
+      <thead>
+        <th  halign="center" >Latitude, Longitude</th>
+        <th  halign="center"  ng-repeat="
+          layer in $root.map.overlayMapTypes | filter:queryFilter($root.map.overlayMapTypes)">
+          {{layer.name}}
+        </th>
+        <th  halign="center" >
+          <i class='fa fa-close clickable'
+            uib-tooltip="Clear all markers"
+            tooltip-placement="left" 
+            ng-click="$root.map.windows=[]"></i>
+        </th>
+      </thead>
+      <tbody>
+        <tr class="clickable"
+          ng-mouseover="row.options.animation=1"
+          ng-mouseleave="row.options.animation=0"
+          ng-repeat="row in $root.map.windows">
+          <td  halign="center">
+            <div>{{row.latitude | lat:3}}</div>
+            <div>{{row.longitude| lon:3}}</div>
+          </td>
+          <td  ng-repeat="
+            layer in $root.map.overlayMapTypes |
+              filter:queryFilter($root.map.overlayMapTypes)">
+            <div ng-repeat="metric in row.data.model[layer.name]">
+              <div uib-tooltip="{{metric.tooltip}}"
+                ng-repeat="(band, value) in metric.values">
+                {{value | units:metric.units}}
+              </div>
+            </div>
+          </td>
+          <td  halign="center" >
+              <i class='fa'
+                ng-click="$root.map.windows.splice($index,1)"
+                ng-class="{
+                  'fa-refresh':!row.data,
+                  'fa-spin':!row.data,
+                  'fa-close':row.data,
+                  'clickable':row.data}"></i>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -1,0 +1,8 @@
+<div class="map_places noselect" ng-controller="placesCtrl">
+<i class="fa fa-map-marker"></i>&nbsp;<select
+    ng-model="$root.map.center"
+    ng-options="place.name for place in places"
+    ng-change="$root.map.zoom=8" class="clickable">
+      <option value="" disabled selected>Pick a location</option>
+    </select>
+</div>

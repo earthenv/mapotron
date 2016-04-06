@@ -1,4 +1,4 @@
-application: my-appengine-app
+application: map-of-life
 version: mapotron
 runtime: python27
 threadsafe: true
@@ -12,8 +12,17 @@ builtins:
 
 handlers:
 
+# MOL REST APIs
+
+
+- url: /cache/.*
+  script: cache_handler.application
+
 - url: /api/tile/.*
   script: tile_handler.application
+
+- url: /api/query/.*
+  script: query_handler.application
 
 - url: /bower_components
   static_dir: bower_components
@@ -24,10 +33,10 @@ handlers:
 # Boots the angular application
 
 - url: /.*
-  script: mapotron.application
+  script: ng.application
 
 - url: /
-  script: mapotron.application
+  script: ng.application
 
 
 libraries:

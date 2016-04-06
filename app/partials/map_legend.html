@@ -1,11 +1,14 @@
-<div ng-show="hasLengend" class="map_legend">
-    <input type="checkbox" ng-model="showLegend" ng-init="showLegend=true" selected> Show legend
-    <div ng-show="showLegend">
+<div class="map_legend noselect" ng-show="($root.map.overlayMapTypes | filter:{show:true}).length">
+    <div ng-click="l=true" class="clickable left" uib-collapse="l">
       <img
-        ng-repeat="layer in map.overlayMapTypes track by layer.id"
+        ng-repeat="layer in $root.map.overlayMapTypes | filter:{show:true} | unique:'legend'"
         ng-show="layer.show"
-        class="legend_img"
+        class="legend_img clickable"
         alt="No legend available"
-        src="/app/img/legend/{{layer.id}}.png"></img>
+        ng-src="/app/img/legend/{{layer.legend|slashify}}.png"></img>
+    </div>
+    <div ng-show="l" class="clickable fa-pull-right toggle" ng-click="l=!l">
+      <i class="fa fa-ellipsis-v fa-3"></i>
+      <i class="fa fa-bars fa-3"></i>
     </div>
 </div>

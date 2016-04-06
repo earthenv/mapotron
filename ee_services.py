@@ -1,10 +1,3 @@
-"""
-   Wraps the EE Image.getMapId method to allow map tiles to be regenerated 
-   given key, zoom, x, and y tile parameters.
-"""
-
-__author__ = "Jeremy Malczyk"
-
 import logging
 import cache
 import json
@@ -18,7 +11,7 @@ def getMap(image, viz_params, key):
     #get map obj
     ee_map = image.getMapId(viz_params)
 
-    map_key = 'cloudmapcache_%s' % key
+    map_key = 'cloudmapcache45412_%s' % key
 
     cache.add(map_key, json.dumps({
         "mapid": ee_map["mapid"],
@@ -26,7 +19,7 @@ def getMap(image, viz_params, key):
     }))
 
     #store the ee request that goes with it
-    ee_key = 'eecache_%s' % (key)
+    ee_key = 'eecache65125_%s' % (key)
 
     cache.add(ee_key, json.dumps({
         "mapid": ee_map["mapid"],
