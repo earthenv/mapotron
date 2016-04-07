@@ -21,8 +21,9 @@ angular.module('mapotron.controllers')
               $state.transitionTo(
                 'map.basic',
                 angular.extend($state.params,{layers: overlays.join(',')}),
-                {notify: false}
+                  {notify: false, location:'replace'}
               );
+
 
             }
           },
@@ -42,8 +43,9 @@ angular.module('mapotron.controllers')
               $state.transitionTo(
                 'map.basic',
                 angular.extend($state.params,{markers: markers.join(',')}),
-                {notify: false}
+                {notify: false, location:'replace'}
               );
+
 
           },
           true
@@ -64,8 +66,12 @@ angular.module('mapotron.controllers')
               $state.transitionTo(
                 'map.basic',
                 angular.extend($state.params,{basemap:basemap}),
-                {notify: false}
+                {notify: false, location:'replace'}
               );
+
+              if(!$scope.$$phase) {
+                $scope.$apply();
+              }
             },
             bounds_changed: function() {
               var map = $scope.map.control.getGMap(),
@@ -77,8 +83,9 @@ angular.module('mapotron.controllers')
               $state.transitionTo(
                 'map.basic',
                 angular.extend($state.params,{z:z, x:x.toFixed(3),y:y.toFixed(3)}),
-                {notify: false}
+                  {notify: false, location:'replace'}
               );
+
 
               if(!$scope.$$phase) {
                 $scope.$apply();
