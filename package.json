@@ -1,0 +1,13 @@
+{
+  "name": "earthenv-maps",
+  "private": true,
+  "version": "0.0.0",
+  "description": "A map application for browsing data hosted on earthenv.org",
+  "repository": "https://github.com/angular/angular-seed",
+  "license": "MIT",
+  "devDependencies": {
+    "grunt": "~0.4.5",
+    "grunt-contrib-uglify": "~0.6.0",
+    "grunt-angular-templates": "~0.5.7"
+  }
+}

@@ -27,7 +27,7 @@ class TileHandler(webapp2.RequestHandler):
         else:
             return True
 
-    def get(self, key, z, x, y):
+    def get(self, collection_id, layer_id, z, x, y):
         z=int(z)
         x=int(x)
         y=int(y)
@@ -37,16 +37,17 @@ class TileHandler(webapp2.RequestHandler):
                 x = x + 2**z
             while x >= 2**z:
                 x = x- 2**z
-            self.getTile(key,z,x,y)
+            self.getTile(collection_id, layer_id,z,x,y)
         else:
             logging.info('Coords out of range, serving blank.')
             tile = open('empty.png', 'r').read()
             services.writeResult(tile, self.response, format='image/png')
 
-    def getTile(self,key,z,x,y):
+    def getTile(self,collection_id, layer_id,z,x,y):
 
         #first try and fetch from cache
-        tile_key = 'cloudtilecache5_%s_%i_%i_%i' % (key, int(z), int(x), int(y))
+        tile_key = 'earthenv-maps_%s_%s_%i_%i_%i' % (collection_id, layer_id, int(z), int(x), int(y))
+        tile_meta_key = 'earthenv-maps_%s_%s' % (collection_id, layer_id)
         tile = services.checkCache(tile_key, type='blob')
 
 
@@ -63,7 +64,7 @@ class TileHandler(webapp2.RequestHandler):
         except Exception as e:
             logging.info(e)
             #No tile available, find the latest mapid/token for this key
-            map_key =  'cloudmapcache5_%s' % (key)
+            map_key =  'earthenv_maps_%s_%s' % (collection_id, layer_id)
             tile_meta = services.checkCache(map_key, type='json')
 
             if tile_meta is None:
@@ -77,12 +78,12 @@ class TileHandler(webapp2.RequestHandler):
                 geodesic = ee.Geometry.Rectangle(-180, -60, 180, 85)
                 bbox = ee.Geometry(geodesic, None, False)
 
-                logging.info('No tile meta, generating new map from %s ' % (ee_assets.layers[key]["asset_id"]))
-                image = ee.Image(ee_assets.layers[key]["asset_id"])
+                logging.info('No tile meta, generating new map from %s ' % (ee_assets.layers[collection_id]["layers"][layer_id]["id"]))
+                image = ee.Image(ee_assets.layers[collection_id]["layers"][layer_id]["id"])
                 tile_meta = ee_services.getMap(
                     image.mask(image.gt(0)).clip(bbox),
-                    ee_assets.layers[key]["viz_params"],
-                    key)
+                    ee_assets.layers[collection_id]["layers"][layer_id]["viz_params"],
+                    tile_meta_key)
                 services.cacheResult({
                     "mapid": tile_meta["mapid"],
                     "token":tile_meta["token"]},
@@ -112,16 +113,16 @@ class TileHandler(webapp2.RequestHandler):
                 import ee
                 import ee_services
 
-                logging.info('Generating new map from %s ' % (ee_assets.layers[key]["asset_id"]))
+                logging.info('Generating new map from %s ' % (ee_assets.layers[collection_id]["layers"][layer_id]["id"]))
 
                 ## this is where I imagine putting .clip(bbox)...
                 geodesic = ee.Geometry.Rectangle(-180, -60, 180, 85)
                 bbox = ee.Geometry(geodesic, None, False)
-                image = ee.Image(ee_assets.layers[key]["asset_id"])
+                image = ee.Image(ee_assets.layers[collection_id]["layers"][layer_id]["id"])
                 tile_meta = ee_services.getMap(
                     image.mask(image.gt(0)).clip(bbox),
-                    ee_assets.layers[key]["viz_params"],
-                    key)
+                    ee_assets.layers[collection_id]["layers"][layer_id]["viz_params"],
+                    tile_meta_key)
 
                 services.cacheResult({
                     "mapid": tile_meta["mapid"],
@@ -149,6 +150,6 @@ class TileHandler(webapp2.RequestHandler):
 
 
 application = webapp2.WSGIApplication([
-    webapp2.Route(r'/api/tile/<key>/<z>/<x>/<y>.png',
+    webapp2.Route(r'/api/tile/<collection_id>/<layer_id>/<z>/<x>/<y>.png',
         handler='tile_handler.TileHandler:get')],
     debug=True)

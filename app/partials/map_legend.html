@@ -2,7 +2,7 @@
     <div ng-click="l=true" class="clickable left" uib-collapse="l">
       <img
         ng-repeat="layer in $root.map.overlayMapTypes | filter:{show:true} | unique:'legend'"
-        ng-show="layer.show"
+        ng-show="layer.show && layer.legend"
         class="legend_img clickable"
         alt="No legend available"
         ng-src="/app/img/legend/{{layer.legend|slashify}}.png"></img>

@@ -2,6 +2,7 @@ import logging
 import cache
 import json
 import ee
+import copy
 
 EE_TILE_URL = 'https://earthengine.googleapis.com/map/%s/{Z}/{X}/{Y}?token=%s'
 
@@ -9,7 +10,7 @@ EE_TILE_URL = 'https://earthengine.googleapis.com/map/%s/{Z}/{X}/{Y}?token=%s'
 #
 def getMap(image, viz_params, key):
     #get map obj
-    ee_map = image.getMapId(viz_params)
+    ee_map = image.getMapId(copy.deepcopy(viz_params))
 
     map_key = 'cloudmapcache45412_%s' % key
 

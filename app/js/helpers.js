@@ -86,6 +86,6 @@ angular.module('env-filters', [])
     };
 }).filter('units', function ($window,$filter) {
   return function(value, units) {
-    return $filter(units)(value);
+    return (units)?$filter(units)(value):value;
   }
 })

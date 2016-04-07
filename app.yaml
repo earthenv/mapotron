@@ -1,5 +1,6 @@
 application: map-of-life
-version: mapotron
+module: earthenv
+version: prod
 runtime: python27
 threadsafe: true
 api_version: 1
@@ -13,7 +14,6 @@ builtins:
 handlers:
 
 # MOL REST APIs
-
 
 - url: /cache/.*
   script: cache_handler.application
@@ -29,14 +29,14 @@ handlers:
 
 - url: /app
   static_dir: app
-
+  
 # Boots the angular application
 
 - url: /.*
-  script: ng.application
+  script: earthenv.application
 
 - url: /
-  script: ng.application
+  script: earthenv.application
 
 
 libraries:

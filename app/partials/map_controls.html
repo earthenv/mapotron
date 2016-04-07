@@ -7,9 +7,7 @@
           <i class="fa fa-bars clickable " ng-click="s=!s"></i>
         </strong>
       </div>
-      <div style="padding:4px;">
-        Global&nbsp;1-km&nbsp;Cloud&nbsp;Cover
-      </div>
+      <div style="padding:4px;">{{$root.collections[$root.collection].title}}</div>
     </div>
     <div
       ng-model=" $root.map.overlayMapTypes " uib-collapse="s" >
@@ -19,7 +17,7 @@
           style="flex:3;-webkit-flex:3;padding:4px;padding-left:4px;"
           class="clickable"
           ng-class="{'selected': layer.show}">
-          {{layer.options.name}}</div>
+          {{layer.properties.title}}</div>
           <div style="flex:2;--webkit-flex:2;padding:4px 0;"><input
               class="opacity-slider" type="range"
               min=0 max=1 step="any"

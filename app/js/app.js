@@ -8,6 +8,7 @@ angular.module('mapotron', [
   'as.sortable',
   'mapotron.directives',
   'mapotron.controllers',
+  'mapotron.services',
   'ui.router',
   'angular.filter',
   'ui.bootstrap',
@@ -41,7 +42,7 @@ angular.module('mapotron', [
           'controls': {templateUrl: 'app/partials/map_controls.html'},
           'legend': {templateUrl: 'app/partials/map_legend.html'}
         },
-        url: '/{z}/{x}/{y}?layers&markers&basemap&embed'
+        url: '/{z}/{x}/{y}?collections&layers&markers&basemap&embed'
       }
     )
     //Gets rid of the # in the querystring. Wont work on IE

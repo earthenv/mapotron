@@ -24,23 +24,25 @@ EE_TILE_URL = 'https://earthengine.googleapis.com/map/%s/%i/%i/%i?token=%s'
 
 
 class QueryHandler(webapp2.RequestHandler):
-    def sample(self, x, y):
+    def sample(self, collection, x, y):
 
         x=float(x)
         y=float(y)
 
-        key = "modcf-query-3-%s-%s" % (x,y)
+        key = "earthenv-maps-query-3-%s-%s-%s" % (collection, x,y)
         response = services.checkCache(key)
         if response is None:
             images = []
-            for k,v in ee_assets.layers.items():
+
+            for k,v in ee_assets.layers[collection]["layers"].items():
+                logging.info(v)
                 if "query_assets" in v:
                     for a in v["query_assets"]:
-                        images.append(ee.Image(a["asset_id"]).set(a).set(
+                        images.append(ee.Image(a["id"]).set(a).set(
                             "name",k).set("image", a["name"]))
 
                 else:
-                    images.append(ee.Image(v["asset_id"]).set(v).set(
+                    images.append(ee.Image(v["id"]).set(v).set(
                         "name",k).set("image",k))
 
             result = ee.ImageCollection(images).map(
@@ -67,6 +69,6 @@ class QueryHandler(webapp2.RequestHandler):
 
 
 application = webapp2.WSGIApplication([
-    webapp2.Route(r'/api/query/sample/<x>/<y>',
+    webapp2.Route(r'/api/query/sample/<collection>/<x>/<y>',
         handler='query_handler.QueryHandler:sample')],
     debug=True)

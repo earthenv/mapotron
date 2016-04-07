@@ -1,18 +1,11 @@
 angular.module('mapotron.controllers')
   .controller('mapotronCtrl',
-  	['$rootScope','$compile','$http','$scope', '$state','$location', '$window', 'uiGmapGoogleMapApi','uiGmapIsReady',
-   		function( $rootScope, $compile,$http,$scope, $state, $location,  $window, uiGmapGoogleMapApi,uiGmapIsReady) {
+  	['getLayers','$rootScope','$compile','$http','$scope', '$state','$location', '$window', 'uiGmapGoogleMapApi','uiGmapIsReady',
+   		function( getLayers, $rootScope, $compile,$http,$scope, $state, $location,  $window, uiGmapGoogleMapApi,uiGmapIsReady) {
         uiGmapGoogleMapApi.then(function(maps) {
         $scope.max=0.5;
-        $scope.showLegend = true
-        $scope.showControls = true;
-        $rootScope.places = [
-          {"name" : "Cape Town"},
-          {"name" : "Nepal"}
-        ];
-
-
-        $scope.$watch(
+        $rootScope.collections = getLayers();
+        $rootScope.$watch(
           'map.overlayMapTypes',
           function(n,o) {
             if(n) {
@@ -35,7 +28,7 @@ angular.module('mapotron.controllers')
           },
           true
         );
-        $scope.$watch(
+        $rootScope.$watch(
           'map.windows',
           function(n,o) {
               var markers = [];
@@ -54,7 +47,7 @@ angular.module('mapotron.controllers')
 
           },
           true
-        )
+        );
 
         $rootScope.map = {
           center: {
@@ -92,7 +85,7 @@ angular.module('mapotron.controllers')
               }
             },
             click: function(map, event, coords) {
-              var length = $rootScope.map.windows.push(
+              var length = $scope.map.windows.push(
                 {
                   id: coords[0].latLng.lat()+'-'+coords[0].latLng.lng(),
                   show: true,
@@ -107,9 +100,9 @@ angular.module('mapotron.controllers')
               if(!$scope.$$phase) {
                 $scope.$apply();
               }
-              $http({"url":'/api/query/sample/'+coords[0].latLng.lng()+'/'+coords[0].latLng.lat()}).then(
+              $http({"url":'/api/query/sample/'+$rootScope.collection+'/'+coords[0].latLng.lng()+'/'+coords[0].latLng.lat()}).then(
                 function(result) {
-                  $rootScope.map.windows[length-1].data= {model:result.data};
+                  $scope.map.windows[length-1].data= {model:result.data};
                   if(!$scope.$$phase) {
                     $scope.$apply();
                   }
@@ -151,15 +144,15 @@ angular.module('mapotron.controllers')
           overlayMapTypes: []
         };
 
-
+        $rootScope.collection = $state.params.collections || 'cloud';
         angular.forEach(
-          layers,
+          $rootScope.collections[$rootScope.collection].layers,
           function(layer, name, self) {
-            $scope.map.overlayMapTypes[layer.index]={
+            $rootScope.map.overlayMapTypes[layer.index]={
               options: {
                 getTileUrl: function(coord, zoom) {
-                  return '/api/tile/{0}/{1}/{2}/{3}.png'
-                      .format(name,zoom,coord.x,coord.y);
+                  return '/api/tile/{0}/{1}/{2}/{3}/{4}.png'
+                      .format($scope.collection,name,zoom,coord.x,coord.y);
                 },
                 tileSize: new google.maps.Size(256, 256),
                 name: name,
@@ -197,7 +190,7 @@ angular.module('mapotron.controllers')
               function(marker,index) {
                 var lat = parseFloat(marker.split(' ')[0]),
                   lng = parseFloat(marker.split(' ')[1]),
-                  index = $rootScope.map.windows.push(
+                  index = $scope.map.windows.push(
                   {
                     id: lat+'-'+lng,
                     show: true,
@@ -208,9 +201,9 @@ angular.module('mapotron.controllers')
                     templateUrl: 'app/partials/map_infowindow.html'
                   }
                 );
-                $http({"url":'/api/query/sample/'+lng+'/'+lat}).then(
+                $http({"url":'/api/query/sample/'+$rootScope.collection + '/' +lng+'/'+lat}).then(
                   function(result) {
-                    $rootScope.map.windows[index-1].data= {model:result.data};
+                    $scope.map.windows[index-1].data= {model:result.data};
                     if(!$scope.$$phase) {
                       $scope.$apply();
                     }
