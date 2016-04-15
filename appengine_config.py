@@ -4,7 +4,7 @@ import cache
 from google.appengine.api import urlfetch
 
 config = json.loads(urlfetch.fetch(
-    url='http://www.earthenv.org/map_config/config.json',
+    url='http://path/to/map/config.json',
     method=urlfetch.GET,
     deadline=600).content)
 
