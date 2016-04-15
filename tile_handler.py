@@ -17,9 +17,6 @@ from google.appengine.api import urlfetch
 
 EE_TILE_URL = 'https://earthengine.googleapis.com/map/%s/%i/%i/%i?token=%s'
 
-
-
-
 class TileHandler(webapp2.RequestHandler):
     def checkCoords(self, z,x,y):
         if y<0 or y>=2**z:
@@ -46,8 +43,8 @@ class TileHandler(webapp2.RequestHandler):
     def getTile(self,collection_id, layer_id,z,x,y):
 
         #first try and fetch from cache
-        tile_key = 'earthenv-maps_%s_%s_%i_%i_%i' % (collection_id, layer_id, int(z), int(x), int(y))
-        tile_meta_key = 'earthenv-maps_%s_%s' % (collection_id, layer_id)
+        tile_key = 'mapotron-maps_%s_%s_%i_%i_%i' % (collection_id, layer_id, int(z), int(x), int(y))
+        tile_meta_key = 'mapotron-maps_%s_%s' % (collection_id, layer_id)
         tile = services.checkCache(tile_key, type='blob')
 
 
@@ -64,7 +61,7 @@ class TileHandler(webapp2.RequestHandler):
         except Exception as e:
             logging.info(e)
             #No tile available, find the latest mapid/token for this key
-            map_key =  'earthenv_maps_%s_%s' % (collection_id, layer_id)
+            map_key =  'mapotron-maps_%s_%s' % (collection_id, layer_id)
             tile_meta = services.checkCache(map_key, type='json')
 
             if tile_meta is None:
