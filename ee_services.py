@@ -12,7 +12,7 @@ def getMap(image, viz_params, key):
     #get map obj
     ee_map = image.getMapId(copy.deepcopy(viz_params))
 
-    map_key = 'cloudmapcache45412_%s' % key
+    map_key = 'somethingrandom_%s' % key
 
     cache.add(map_key, json.dumps({
         "mapid": ee_map["mapid"],
