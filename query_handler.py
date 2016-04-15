@@ -29,7 +29,7 @@ class QueryHandler(webapp2.RequestHandler):
         x=float(x)
         y=float(y)
 
-        key = "earthenv-maps-query-3-%s-%s-%s" % (collection, x,y)
+        key = "mapotron-query-%s-%s-%s" % (collection, x,y)
         response = services.checkCache(key)
         if response is None:
             images = []
