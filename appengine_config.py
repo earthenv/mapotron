@@ -14,4 +14,4 @@ for collection in config:
     for feature in collection["features"]:
         collections[collection["id"]]["layers"][feature["layer_id"]]=feature
 
-cache.add('earthenv-maps',json.dumps(collections))
+cache.add('mapotron-maps',json.dumps(collections))
