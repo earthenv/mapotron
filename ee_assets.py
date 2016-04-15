@@ -1,2 +1,2 @@
 import cache
-layers = cache.get('earthenv-maps',loads=True)
+layers = cache.get('mapotron-maps',loads=True)
