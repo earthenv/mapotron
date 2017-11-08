@@ -6,8 +6,7 @@ from google.appengine.api import urlfetch
 config = json.loads(urlfetch.fetch(
     url='http://earthenv.org/map_config/config.json',
     method=urlfetch.GET,
-    deadline=600).content,
-    validate_certificate=False)
+    deadline=600).content)
 
 collections = {}
 for collection in config:
