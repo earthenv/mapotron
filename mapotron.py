@@ -27,14 +27,15 @@ class BaseHandler(webapp2.RequestHandler):
 
 class MapOTron(BaseHandler):
     def get(self):
-
-	layers = []
-	for id in ee_assets.layers.keys():
-		layers.append({"id":id, "title":ee_assets.layers[id].get("title") or id})
-        self.render_template('index.html', {"layers" : layers, "PROD": PROD})
+        datasets = cache.get('earthenv-maps')
+        self.render_template(
+	   'index.html', 
+	   {
+	      "rand": "klsjdflkjs",
+	      "collections" : datasets
+	   })
     def post(self):
         self.push_html('index.html')
-
 application = webapp2.WSGIApplication(
          [
           ('/.*',MapOTron),
