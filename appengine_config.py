@@ -7,7 +7,7 @@ config = json.loads(urlfetch.fetch(
     url='https://earthenv.org/map_config/config.json',
     method=urlfetch.GET,
     deadline=600).content,
-    validate_certificate=True)
+    validate_certificate=False)
 
 collections = {}
 for collection in config:
