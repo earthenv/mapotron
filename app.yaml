@@ -33,10 +33,10 @@ handlers:
 # Boots the angular application
 
 - url: /.*
-  script: earthenv.application
+  script: mapotron.application
 
 - url: /
-  script: earthenv.application
+  script: mapotron.application
 
 
 libraries:
