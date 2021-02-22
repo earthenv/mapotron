@@ -1,1 +1,1 @@
-# gcloud app deploy --no-promote --version=slow --project=map-of-life app.yaml
+gcloud app deploy --no-promote --version=dev --project=map-of-life app.yaml

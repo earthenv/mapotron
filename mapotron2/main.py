@@ -41,6 +41,12 @@ def get_image(collection_id, layer_id):
         raise Exception(f'Layer not found: {layer_id} .')
 
     layer = collection['layers'][layer_id]
+
+    if layer_id == 'daily_precip_v21':
+        logging.info(f'Generating annual mean precipitation')
+        imgByYear = ee.ImageCollection('projects/earthenv/chelsa/daily_precip_land_v21').filterDate('2014-01-01', '2015-01-01').mean().multiply(0.01)
+        return ee.Image(imgByYear), collection, layer
+
     logging.info(f'Generating new map from: {layer["id"]}')
 
     return ee.Image(layer["id"]), collection, layer
@@ -108,28 +114,46 @@ def sample(collection_id, x, y):
 
     images = []
 
-    for k in collection['layers']:
-        v = collection['layers'][k]
-        logging.info(v)
-        if "query_assets" in v:
-            for a in v["query_assets"]:
-                images.append(ee.Image(a["id"]).set(a).set(
-                    "name", k).set("image", a["name"]))
+    result = None
 
-        else:
-            images.append(ee.Image(v["id"]).set(v).set(
-                "name", k).set("image", k))
+    if collection_id == 'precipitation':
+        imgByYear = ee.ImageCollection('projects/earthenv/chelsa/daily_precip_land_v21').filterDate('2014-01-01', '2015-01-01').mean().multiply(0.01)
+        imgResult = imgByYear.reduceRegion(reducer=ee.Reducer.first(), scale=1000, geometry=ee.Geometry.Point([x, y]))
+        result = ee.Feature(None).setMulti({"name": "Mean Annual Precipitation", "title": "Mean Annual Precipitation", "layer_id": "daily_precip_v21", "values": imgResult}).getInfo()
+    else:
+        for k in collection['layers']:
+            v = collection['layers'][k]
+            logging.info(v)
+            if "query_assets" in v:
+                for a in v["query_assets"]:
+                    images.append(ee.Image(a["id"]).set(a).set(
+                        "name", k).set("image", a["name"]))
 
-    result = ee.ImageCollection(images).map(
-        lambda i:
-            ee.Feature(None).copyProperties(i).set(
-                "values", i.reduceRegion(
-                    reducer=ee.Reducer.first(),
-                    geometry=ee.Geometry.Point([x, y])))
-    ).getInfo()
+            else:
+                images.append(ee.Image(v["id"]).set(v).set(
+                    "name", k).set("image", k))
+
+        result = ee.ImageCollection(images).map(
+            lambda i:
+                ee.Feature(None).copyProperties(i).set(
+                    "values", i.reduceRegion(
+                        reducer=ee.Reducer.first(),
+                        geometry=ee.Geometry.Point([x, y])))
+        ).getInfo()
 
     response = {}
-    for feature in result["features"]:
+    if "features" in result:
+        for feature in result["features"]:
+            # print(feature)
+            try:
+                if feature["properties"]["name"] not in response:
+                    response[feature["properties"]["name"]] = []
+                response[feature["properties"]["name"]].append(
+                    feature["properties"])
+            except Exception as e:
+                logging.info(e)
+    else:
+        feature = result
         # print(feature)
         try:
             if feature["properties"]["name"] not in response:
