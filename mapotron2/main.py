@@ -119,7 +119,7 @@ def sample(collection_id, x, y):
     if collection_id == 'precipitation':
         imgByYear = ee.ImageCollection('projects/earthenv/chelsa/daily_precip_land_v21').filterDate('2014-01-01', '2015-01-01').mean().multiply(0.01)
         imgResult = imgByYear.reduceRegion(reducer=ee.Reducer.first(), scale=1000, geometry=ee.Geometry.Point([x, y]))
-        result = ee.Feature(None).setMulti({"name": "Mean Annual Precipitation", "title": "Mean Annual Precipitation", "layer_id": "daily_precip_v21", "values": imgResult}).getInfo()
+        result = ee.Feature(None).setMulti({"name": "Mean Annual Precipitation Rate", "title": "Mean Annual Precipitation Rate", "layer_id": "daily_precip_v21", "units": "kg*m^-2*day^-1", "values": imgResult}).getInfo()
     else:
         for k in collection['layers']:
             v = collection['layers'][k]

@@ -113,14 +113,14 @@
                   <tr>
                     <th scope="col">Layer</th>
                     <th scope="col">Value</th>
-                    <!-- <th scope="col">Unit</th> -->
+                    <th scope="col">Unit</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr v-for="layer,val in sampleData">
                     <th scope="row">{{"layer[0]['title']" | vue }}</th>
-                    <td scope="row">{{"layer[0]['values']['b1']" | vue }}</td>
-                    <!-- <td scope="row">{{"layer[0]['units']" | vue }}</td> -->
+                    <td scope="row" v-html="$options.filters.formatNumber(layer[0]['values']['b1'])">{{"layer[0]['values']['b1']" | vue }}</td>
+                    <td scope="row">{{"layer[0]['units']" | vue }}</td>
                   </tr>
                 </tbody>
               </table>
@@ -259,6 +259,14 @@
               this.lng = null;
               this.sampleData = {};
               this.marker.setMap(null);
+            }
+          },
+          filters: {
+            formatNumber(value) {
+              if (typeof value == 'number') {
+                return +value.toFixed(2)
+              }
+              return value;
             }
           },
           watch: {
