@@ -51,6 +51,7 @@
     .active-layer {
       font-weight: 500;
       font-size: 13px;
+      border-top: 1px #eee solid;
     }
 
     /* .non-active-layer {
@@ -95,11 +96,12 @@
       padding: 5px;
       margin-left: 6%;
     }
-    .slide {
+    .slideerr {
     padding: 7px 0px;
-    width: 62%;
+    max-width: 62%;
     height: 4px;
-}
+
+    }
   </style>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vue-slider-component@latest/theme/default.css">
 
@@ -121,10 +123,10 @@
           </div>
           <div class="toast-body">
             <div v-for="layer in layers" class="active-layer">
-              <span>{{"layer.title"|vue}} </span>
+              <span>{{"layer.title"|vue}}</span>
               <input class="form-check-input" type="checkbox" v-model="layer.visible"
                 v-on:change="toggleLayer(layer)" />
-              <vue-slider v-show="layer.show" class="slide" tooltip="none" :min="0" :max="1" :interval="0.01"
+              <vue-slider v-show="layer.show" class="slideerr" tooltip="none" :min="0" :max="1" :interval="0.01"
                 v-model="layer.opacity" v-on:change="updateOpacity(layer)"></vue-slider>
             </div>
           </div>
@@ -323,6 +325,7 @@
           layers.forEach((layer, i) => {
             layer.gmapsLayer = null;
             layer.selected = layer.layer_id === selectedLayer;
+            layer.visible = layer.layer_id === selectedLayer;
             layer.opacity = DEFAULT_OPACITY;
           })
           return {
