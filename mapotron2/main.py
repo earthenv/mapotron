@@ -1,6 +1,7 @@
 import logging
 import os
 import json
+from flask.helpers import send_from_directory
 from markupsafe import escape
 import requests
 import ee
@@ -174,6 +175,11 @@ def index():
         'collections': ee_config.collections
     })
 
+
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(os.path.join(app.root_path, 'static'),
+                               'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 @app.route('/_ah/warmup')
 def warmup():
