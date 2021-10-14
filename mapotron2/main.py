@@ -76,6 +76,13 @@ def get_image(collection_id, layer_id, coll_year=None):
             imgOutline = ee.Image(0).mask(0).paint(ee.FeatureCollection(layer['id']), 1, 2)
             return ee.Image(imgOutline), collection, layer
 
+    if collection_id == 'mountains':
+        gmba_level_fc = ee.FeatureCollection(layer['id'])
+        color_column = 'ColorBasic' if layer_id == 'basic' else 'ColorAll'
+        imgOutline = ee.Image(0).mask(0).paint(gmba_level_fc, color_column).paint(gmba_level_fc, color_column, 1)
+        
+        return ee.Image(imgOutline), collection, layer
+
     logging.info(f'Generating new map from: {layer["id"]}')
 
     return ee.Image(layer["id"]), collection, layer
@@ -150,6 +157,9 @@ def vue(collection_id):
     
     if collection_id == 'tcf':
         return render_template('tcf.html', **map_info)
+    
+    if collection_id == 'mountains':
+        return render_template('mountains.html', **map_info)
     
     return render_template('vue.html', **map_info)
 
@@ -262,6 +272,36 @@ def sample(collection_id, x, y):
                                 }
                             },
                         })
+    elif collection_id == 'mountains':
+        result = {'features': []}
+        v = collection['layers']['basic']
+        gmba_fc = ee.FeatureCollection('projects/map-of-life/regional/GMBA/v2/inventory_v2_20210916').filterBounds(ee.Geometry.Point([x, y]))
+        gmba_fc_nogeom = gmba_fc.map(lambda f: ee.Feature(None).copyProperties(f))
+        res = gmba_fc_nogeom.getInfo()
+        if "features" in res:
+            for f in res['features']:
+                result['features'].append({
+                    "type": "Feature",
+                    "geometry": None,
+                    "id": "0",
+                    "properties": {
+                        "id": v["id"],
+                        "layer_id": v["layer_id"],
+                        "name": v["layer_id"],
+                        "show": v["show"],
+                        "title": v["title"],
+                        "values": {
+                            'MapName': f['properties']['MapName'],
+                            'Countries': f['properties']['Countries'],
+                            'Path': f['properties']['Path'],
+                            'Area': f['properties']['Area'],
+                            'Elev_Low': f['properties']['Elev_Low'],
+                            'Elev_High': f['properties']['Elev_High'],
+                            'WikiDataID': f['properties']['WikiDataID'],
+                            'WikiDataURL': f['properties']['WikiDataUR'],
+                        }
+                    },
+                })
     else:
         for k in collection['layers']:
             v = collection['layers'][k]

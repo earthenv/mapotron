@@ -1,7 +1,7 @@
 [
     {
       "type": "FeatureCollection", 
-      "id": "gmba", 
+      "id": "mountains", 
       "title": "GMBA Mountain Inventory", 
       "features": [{
           "id": "projects/map-of-life/regional/GMBA/v2/inventory_v2_select300_20210916", 
@@ -12,7 +12,7 @@
           }, 
           "layer_id": "select_300", 
           "show": true, 
-          "title": "Large scale", 
+          "title": "Large scale (300 selection)", 
           "index": 0
       }, {
           "id": "projects/map-of-life/regional/GMBA/v2/inventory_v2_basic_20210916", 
@@ -23,7 +23,7 @@
           }, 
           "layer_id": "basic", 
           "show": true, 
-          "title": "Fine scale", 
+          "title": "Fine scale (Basic)", 
           "index": 1
       }]
   },
