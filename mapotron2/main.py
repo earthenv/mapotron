@@ -24,7 +24,7 @@ def vue(item):
     return "{{ " + item + " }}"
 
 
-def get_image(collection_id, layer_id):
+def get_image(collection_id, layer_id, coll_year=None):
     if collection_id not in ee_config.collections:
         raise Exception(f'Collection not found: {collection_id} .')
 
@@ -33,19 +33,27 @@ def get_image(collection_id, layer_id):
         show = [k for k in collection['layers']
                 if collection['layers'][k]['show']]
 
-        if len(show) == 1:
+        if len(show) > 0:
             layer_id = show[0]
         else:
             layer_id = [k for k in collection['layers']][0]
-
+        
     if layer_id not in collection['layers']:
         raise Exception(f'Layer not found: {layer_id} .')
 
     layer = collection['layers'][layer_id]
 
     if layer_id == 'daily_precip_v21':
-        logging.info(f'Generating annual mean precipitation')
-        imgByYear = ee.ImageCollection('projects/earthenv/chelsa/daily_precip_land_v21').filterDate('2014-01-01', '2015-01-01').mean().multiply(0.01)
+        prec_start_date = '2016-01-01'
+        prec_end_date = '2017-01-01'
+        try:
+            if coll_year is not None:
+                prec_start_date = f"{int(coll_year)}-01-01"
+                prec_end_date = f"{int(coll_year) + 1}-01-01"
+        except Exception as ex:
+            raise Exception(f'Invalid precipitation date.')
+        
+        imgByYear = ee.ImageCollection('projects/earthenv/chelsa/daily_precip_land_v21').filterDate(prec_start_date, prec_end_date).mean().multiply(0.01)
         return ee.Image(imgByYear), collection, layer
 
     logging.info(f'Generating new map from: {layer["id"]}')
@@ -53,14 +61,13 @@ def get_image(collection_id, layer_id):
     return ee.Image(layer["id"]), collection, layer
 
 
-def get_map(collection_id, layer_id):
-    image, collection, layer = get_image(collection_id, layer_id)
+def get_map(collection_id, layer_id, coll_year=None):
+    image, collection, layer = get_image(collection_id, layer_id, coll_year)
     # this is where I imagine putting .clip(bbox)...
-    geodesic = ee.Geometry.Rectangle(-180, -60, 180, 85)
+    geodesic = ee.Geometry.Rectangle(-180, -85, 180, 85)
     bbox = ee.Geometry(geodesic, None, False)
-    mapid = image.mask(image.gt(0)).clip(bbox).getMapId(
-        layer["viz_params"]
-    )
+    mapid = image.getMapId(layer["viz_params"])
+    
     return {
         'map': {
             'mapid': mapid['mapid'],
@@ -84,6 +91,12 @@ def map(collection_id, layer_id):
     """Return a friendly HTTP greeting."""
 
     map_info = get_map(collection_id, layer_id)
+    coll_year = request.args.get("year", None)
+    
+    if collection_id == 'precipitation' and coll_year is None:
+        coll_year = 2016
+    
+    map_info = get_map(collection_id, layer_id, coll_year=coll_year)
     map_info['collection'] = None
     return jsonify(map_info)
 
@@ -98,7 +111,15 @@ def page(collection_id, layer_id):
 @app.route('/<collection_id>')
 def vue(collection_id):
     """Return a friendly HTTP greeting."""
-    map_info = get_map(collection_id, None)
+    coll_year = request.args.get("year", None)
+    
+    if collection_id == 'precipitation' and coll_year is None:
+        coll_year = 2016
+    map_info = get_map(collection_id, None, coll_year=coll_year)
+    
+    if collection_id == 'precipitation':
+        return render_template('precipitation.html', **map_info)
+    
     return render_template('vue.html', **map_info)
 
 
@@ -118,9 +139,22 @@ def sample(collection_id, x, y):
     result = None
 
     if collection_id == 'precipitation':
-        imgByYear = ee.ImageCollection('projects/earthenv/chelsa/daily_precip_land_v21').filterDate('2014-01-01', '2015-01-01').mean().multiply(0.01)
-        imgResult = imgByYear.reduceRegion(reducer=ee.Reducer.first(), scale=1000, geometry=ee.Geometry.Point([x, y]))
-        result = ee.Feature(None).setMulti({"name": "Mean Annual Precipitation Rate", "title": "Mean Annual Precipitation Rate", "layer_id": "daily_precip_v21", "units": "kg*m^-2*day^-1", "values": imgResult}).getInfo()
+        coll_year = request.args.get("year", 2016)
+
+        prec_start_date = '2016-01-01'
+        prec_end_date = '2016-01-01'
+        try:
+            if coll_year is not None:
+                prec_start_date = f"{int(coll_year)}-01-01"
+                prec_end_date = f"{int(coll_year) + 1}-01-01"
+        except Exception as ex:
+            raise Exception(f'Invalid precipitation date.')
+        imgColByYear = ee.ImageCollection('projects/earthenv/chelsa/daily_precip_land_v21').filterDate(prec_start_date, prec_end_date)
+        
+        hist = ee.FeatureCollection(imgColByYear.map(lambda i: i.set(i.unmask().reduceRegion(reducer=ee.Reducer.mean(), scale=1000, geometry=ee.Geometry.Point([x, y]), maxPixels=1e8).rename(['b1'],['mean'])))).sort('system:time_start')
+        hist = ee.Dictionary({"histogram": hist.aggregate_array('mean').join(",")})
+
+        result = ee.Feature(None).setMulti({"name": "CHELSA-EarthEnv Precipitation Rate", "title": "Precipitation Rate", "layer_id": "daily_precip_v21", "units": "kg*m^-2*day^-1", "values": hist}).getInfo()
     else:
         for k in collection['layers']:
             v = collection['layers'][k]
@@ -145,7 +179,6 @@ def sample(collection_id, x, y):
     response = {}
     if "features" in result:
         for feature in result["features"]:
-            # print(feature)
             try:
                 if feature["properties"]["name"] not in response:
                     response[feature["properties"]["name"]] = []
@@ -155,7 +188,6 @@ def sample(collection_id, x, y):
                 logging.info(e)
     else:
         feature = result
-        # print(feature)
         try:
             if feature["properties"]["name"] not in response:
                 response[feature["properties"]["name"]] = []
