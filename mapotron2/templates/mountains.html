@@ -1,153 +1,185 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{collection.title}}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
-    <style type="text/css">
-      html { height: 100% }
-      body { height: 100%; margin: 0; padding: 0px;}
-      table tbody tr td { border-width: 0.2px; }
-      #map { width: 100%; height: 100%;}
-      #toastPlacement {
-        position: absolute;
-        top: 0px;
-        left: 0;
-      }
-      #toastPlacementRight {
-        position: absolute;
-        top: 0px;
-        right: 50px;
-      }
-      #toastPlacementRight .toast {
-        width: 500px;
-      }
-      .toast-header {
-        padding: 0.6rem .75rem;
-      }
-      #layer-toast > .toast-body {
-        max-height: 80vh;
-        overflow-y: scroll;
-      }
-      .layer-toast > .toast-body {
-        max-height: 80vh;
-        overflow-y: scroll;
-      }
 
-      .active-layer {
-        font-weight: 500;
-        font-size: 18px;
-      }
-      .non-active-layer {
-        font-weight: 200;
-        font-size: 12px;
-      }
-      .layer-control {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        padding: 5px 0;
-        width: 100%;
-      }
-      .layer-control > span {
-        min-width: 60%;
-        cursor: pointer;
-      }
-      .layer-control > .slide {
-        min-width: 40%;
-      }
-      #sample-spinner {
-        /* margin: 5px; */
-        margin-left: 10px;
-        height: 20px;
-        width: 20px;
-      }
-      #layer-spinner {
-        height: 20px;
-        width: 20px;
-      }
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{collection.title}}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
+  <style type="text/css">
+    html {
+      height: 100%
+    }
+
+    body {
+      height: 100%;
+      margin: 0;
+      padding: 0px;
+    }
+
+    table tbody tr td {
+      border-width: 0.2px;
+    }
+
+    #map {
+      width: 100%;
+      height: 100%;
+    }
+
+    #toastPlacement {
+      position: absolute;
+      top: 0px;
+      left: 0;
+    }
+
+    #toastPlacementRight {
+      position: absolute;
+      top: 0px;
+      right: 50px;
+    }
+
+    #toastPlacementRight .toast {
+      width: 500px;
+    }
+
+    .toast-header {
+      padding: 0.6rem .75rem;
+    }
+
+    #layer-toast>.toast-body {
+      max-height: 80vh;
+      overflow-y: scroll;
+    }
+
+    .layer-toast>.toast-body {
+      max-height: 80vh;
+      overflow-y: scroll;
+    }
+
+    .active-layer {
+      font-weight: 500;
+      font-size: 13px;
+      border-top: 1px #eee solid;
+      padding-top: 8px;
+      padding-bottom: 8px;
+    }
+
+    /* .non-active-layer {
+      font-weight: 200;
+      font-size: 12px;
+    } */
+
+    .layer-control {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      padding: 5px 0;
+      width: 100%;
+    }
+
+    .layer-control>span {
+      min-width: 60%;
+      cursor: pointer;
+    }
+
+    .layer-control>.slide {
+      min-width: 25%;
+      right: -8%;
+    }
+
+    #sample-spinner {
+      /* margin: 5px; */
+      margin-left: 10px;
+      height: 20px;
+      width: 20px;
+    }
+
+    #layer-spinner {
+      height: 20px;
+      width: 20px;
+    }
+
+    /* .form-check-input {
+      float: right;
+    } */
+    .slideerr {
+      padding: 7px 0px;
+      max-width: 62%;
+      height: 4px;
+    }
   </style>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vue-slider-component@latest/theme/default.css">
 
 
 </head>
+
 <body>
   <div id="map"></div>
-    <div id="root">
-      <div>
-        <div class="toast-container position-absolute p-2" id="toastPlacement">
-          <div id="layer-toast" class="toast">
-            <div class="toast-header">
-              <strong class="me-auto">{{collection.title}}</strong>
-              <div v-if="layerLoading" id="layer-spinner" class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
-              </div>
+  <div id="root">
+    <div>
+      <div class="toast-container position-absolute p-2" id="toastPlacement">
+        <div id="layer-toast" class="toast">
+          <div class="toast-header">
+            <strong class="me-auto">{{collection.title}}</strong>
+            <div v-if="layerLoading" id="layer-spinner" class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
             </div>
-            <div class="toast-body">
-              <div v-for="layer in layers" :class="{ 'active-layer': layer.show, 'not-layer': !layer.show, 'layer-control': true }">
-                <span v-on:click="toggleLayer(layer)">{{"layer.title"|vue}}</span>
-                <vue-slider
-                  class="slide"
-                  tooltip="none"
-                  :min="0"
-                  :max="1"
-                  :interval="0.01"
-                  v-model="layer.opacity"
-                  v-on:change="updateOpacity(layer)"
-                ></vue-slider>
-              </div>
-              <div v-if="`{{collection_id}}` === 'tcf'">
-                <select class="form-control" v-model="collSelectedYear">
-                  <option v-for="yr in collYears" :value="yr" :key="yr">{{ "yr" | vue}}</option>
-                </select>
-              </div>
+          </div>
+          <div class="toast-body">
+            <div v-for="layer in layers" class="active-layer">
+              <input class="form-check-input" type="checkbox" v-model="layer.visible"
+                v-on:change="toggleLayer(layer)" />
+              <span>{{"layer.title"|vue}}</span>
+              <vue-slider v-show="layer.show" class="slideerr" tooltip="none" :min="0" :max="1" :interval="0.01"
+                v-model="layer.opacity" v-on:change="updateOpacity(layer)"></vue-slider>
             </div>
           </div>
         </div>
-        <div class="toast-container position-absolute p-2" id="toastPlacementRight">
-          <div id="layer-toast" class="toast">
-            <div class="toast-header">
-              <strong class="me-auto">Sample</strong>
-              <small v-if="lat && lng">Lng: {{"lng.toFixed(3)"|vue}}, Lat: {{"lat.toFixed(3)"|vue}}</small>
-              <small v-if="!(lat && lng)">Click on the map to get values at that point</small>
-              <button v-if="lat && lng && !sampleLoading" type="button" class="btn-close" v-on:click="clearSample" aria-label="Close"></button>
-              <div v-if="sampleLoading" id="sample-spinner" class="spinner-border text-primary " role="status">
-                <span class="visually-hidden">Loading...</span>
-              </div>
+      </div>
+      <div class="toast-container position-absolute p-2" id="toastPlacementRight">
+        <div id="layer-toast" class="toast">
+          <div class="toast-header">
+            <strong class="me-auto">Sample</strong>
+            <small v-if="lat && lng">Lng: {{"lng.toFixed(3)"|vue}}, Lat: {{"lat.toFixed(3)"|vue}}</small>
+            <small v-if="!(lat && lng)">Click on the map to get values at that point</small>
+            <button v-if="lat && lng && !sampleLoading" type="button" class="btn-close" v-on:click="clearSample"
+              aria-label="Close"></button>
+            <div v-if="sampleLoading" id="sample-spinner" class="spinner-border text-primary " role="status">
+              <span class="visually-hidden">Loading...</span>
             </div>
-            <div class="toast-body" v-if="Object.keys(sampleData).length > 0">
-              <div v-for="layer,val in sampleData">
-                <div v-if="val == 'basic'">
-                  <hr />
-                  <strong>GMBA Mountain Inventory v2</strong>
-                  <div>
-                    <table class="table">
-                      <thead>
-                        <tr>
-                          <th scope="col">MapName</th>
-                          <th scope="col">Countries</th>
-                          <th scope="col">Path</th>
-                          <th scope="col">Area</th>
-                          <th scope="col">Elevation-Low</th>
-                          <th scope="col">Elevation-High</th>
-                          <th scope="col">Wiki</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr v-for="feat,val in layer">
-                          <td scope="row">{{"feat['values']['MapName']" | vue }}</td>
-                          <td scope="row">{{"feat['values']['Countries']" | vue }}</td>
-                          <td scope="row">{{"feat['values']['Path']" | vue }}</td>
-                          <td scope="row">{{"feat['values']['Area']" | vue }}</td>
-                          <td scope="row">{{"feat['values']['Elev_Low']" | vue }}</td>
-                          <td scope="row">{{"feat['values']['Elev_High']" | vue }}</td>
-                          <td scope="row"><span v-if="feat['values']['WikiDataID']">
+          </div>
+          <div class="toast-body" v-if="Object.keys(sampleData).length > 0">
+            <div v-for="layer,val in sampleData">
+              <div v-if="val == 'basic'">
+                <hr />
+                <strong>GMBA Mountain Inventory v2</strong>
+                <div>
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th scope="col">MapName</th>
+                        <th scope="col">Countries</th>
+                        <th scope="col">Path</th>
+                        <th scope="col">Area</th>
+                        <th scope="col">Elevation-Low</th>
+                        <th scope="col">Elevation-High</th>
+                        <th scope="col">Wiki</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="feat,val in layer">
+                        <td scope="row">{{"feat['values']['MapName']" | vue }}</td>
+                        <td scope="row">{{"feat['values']['Countries']" | vue }}</td>
+                        <td scope="row">{{"feat['values']['Path']" | vue }}</td>
+                        <td scope="row">{{"feat['values']['Area']" | vue }}</td>
+                        <td scope="row">{{"feat['values']['Elev_Low']" | vue }}</td>
+                        <td scope="row">{{"feat['values']['Elev_High']" | vue }}</td>
+                        <td scope="row"><span v-if="feat['values']['WikiDataID']">
                             <a :href="feat.values.WikiDataURL" target="_blank">{{"feat.values.WikiDataID" | vue }}</a>
                           </span></td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>
@@ -155,234 +187,201 @@
         </div>
       </div>
     </div>
-    <script src="https://maps.googleapis.com/maps/api/js?key={{config.GMAPS_KEY}}"></script>
-    <!-- make it non min vue for development -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.0/vue.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vue-slider-component@latest/dist/vue-slider-component.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.1"></script>
-    <script src="/static/ee_api_js.js"></script>
-    <script src="/static/mapstyles.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
-    <script>
-      const EE_MAP_PATH = 'https://earthengine.googleapis.com/v1alpha';
-      const DEFAULT_OPACITY = 0.65;
-      const TCF_YEAR_MIN = 2001;
-      const TCF_YEAR_MAX = 2018;
-      const TCF_YEAR_DEFAULT = TCF_YEAR_MAX;
-      document.addEventListener('DOMContentLoaded', function() {
-        var getTileSource = function(mapid= '{{map.mapid}}', token = '{{map.token}}') {
-          return new ee.layers.EarthEngineTileSource({
-              mapid,
-              token,
-              formatTileUrl: (x, y, z) =>
-                `${EE_MAP_PATH}/${mapid}/tiles/${z}/${x}/${y}`
-            })
-        }
-        Vue.component('vueSlider', window[ 'vue-slider-component' ]);
+  </div>
+  <script src="https://maps.googleapis.com/maps/api/js?key={{config.GMAPS_KEY}}"></script>
+  <!-- make it non min vue for development -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.0/vue.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue-slider-component@latest/dist/vue-slider-component.umd.min.js"></script>
+  <script src="/static/ee_api_js.js"></script>
+  <script src="/static/mapstyles.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW"
+    crossorigin="anonymous"></script>
+  <script>
+    const EE_MAP_PATH = 'https://earthengine.googleapis.com/v1alpha';
+    const DEFAULT_OPACITY = 0.65;
+    document.addEventListener('DOMContentLoaded', function () {
+      var getTileSource = function (mapid = '{{map.mapid}}', token = '{{map.token}}') {
+        return new ee.layers.EarthEngineTileSource({
+          mapid,
+          token,
+          formatTileUrl: (x, y, z) =>
+            `${EE_MAP_PATH}/${mapid}/tiles/${z}/${x}/${y}`
+        })
+      }
+      Vue.component('vueSlider', window['vue-slider-component']);
 
-        function getDates(startDate, endDate, interval) {
-          const duration = endDate - startDate;
-          const steps = duration / interval;
-          return Array.from({length: steps+1}, (v,i) => new Date(startDate.valueOf() + (interval * i)));
-        }
-        function getTCFDates(year) {
-          if (year === undefined) { year = TCF_YEAR_DEFAULT; }
-          const startDate = new Date(TCF_YEAR_MIN,0,1);
-          const endDate = new Date(TCF_YEAR_MAX,0,1);
-          const dayInterval = 1000 * 60 * 60 * 24 * 365; // 1 day
-          const yearInterval = dayInterval * 365; // 1 year
-          return getDates(startDate, endDate, yearInterval);
-        }
-        function getTCFYears() {
-          // 2001 - 2018 = 18 years
-          return Array.from(new Array(18),(val,index)=>index+TCF_YEAR_MIN);
-        }
-  
-        new Vue({
-          el: '#root',
-          mounted: function() {
-            const myLatLng = new google.maps.LatLng(0, 0);
-            const urlParams = new URLSearchParams(window.location.search);
-            const embed = urlParams.get('embed');
-            const basemap = urlParams.get('basemap');
-            const mapOptions = {
-              scrollwheel: (embed !== 'true'),
-              streetViewControl: false,
-              panControl: false,
-              maxZoom: 18,
-              minZoom: 1,
-              center: myLatLng,
-              zoom: 3,
-              styles: styles,
-              rotateControl: true,
-              mapTypeId: (basemap==='earth') ? google.maps.MapTypeId.SATELLITE : google.maps.MapTypeId.ROADMAP,
-              rotateControlOptions: {
-                position: google.maps.ControlPosition.TOP_RIGHT
+      new Vue({
+        el: '#root',
+        mounted: function () {
+          const myLatLng = new google.maps.LatLng(0, 0);
+          const urlParams = new URLSearchParams(window.location.search);
+          const embed = urlParams.get('embed');
+          const basemap = urlParams.get('basemap');
+          const mapOptions = {
+            scrollwheel: (embed !== 'true'),
+            streetViewControl: false,
+            panControl: false,
+            maxZoom: 18,
+            minZoom: 1,
+            center: myLatLng,
+            zoom: 3,
+            styles: styles,
+            rotateControl: true,
+            mapTypeId: (basemap === 'earth') ? google.maps.MapTypeId.SATELLITE : google.maps.MapTypeId.ROADMAP,
+            rotateControlOptions: {
+              position: google.maps.ControlPosition.TOP_RIGHT
 
-              },
-              fullscreenControl: true,
-              fullscreenControlOptions: {
-                position: google.maps.ControlPosition.TOP_RIGHT
-
-              },
-              mapTypeControl: true,
-              mapTypeControlOptions: {
-                position: google.maps.ControlPosition.TOP_CENTER,
-                style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR
-
-              },
-              zoomControl: true,
-              zoomControlOptions: {
-                style: google.maps.ZoomControlStyle.LARGE,
-                position: google.maps.ControlPosition.RIGHT_TOP
-              }
-            };
-            this.map = new google.maps.Map(document.getElementById('map'), mapOptions);
-            this.$nextTick(() => {
-              let layer = this.layers.find(x => x.layer_id === this.selectedLayer);
-              layer.mapLayer = new ee.layers.ImageOverlay(getTileSource());
-              layer.visible = layer.show;
-              layer.mapLayer.setOpacity(DEFAULT_OPACITY);
-              layer.mapIndex = this.map.overlayMapTypes.length;
-              this.map.overlayMapTypes.push(layer.mapLayer);
-            })
-            google.maps.event.addListener(this.map, 'click', (event) => {
-                this.lat = event.latLng.lat()
-                this.lng = event.latLng.lng()
-                this.sampleLoading = true;
-                this.sampleData = false;
-                if (this.marker) {
-                  this.marker.setMap(null);
-                }
-                this.marker = new google.maps.Marker({
-                    position: event.latLng
-                });
-                this.marker.setMap(this.map);
-
-                // To add the marker to the map, call setMap();
-                this.marker.setMap(this.map);
-                let sampleUrl = `/sample/{{collection_id}}/${this.lng.toFixed(3)}/${this.lat.toFixed(3)}`;
-                if (`{{collection_id}}` === 'tcf') {
-                  sampleUrl += `?year=` + this.collSelectedYear;
-                }
-                axios.get(sampleUrl)
-                  .then((response) => {
-                    this.sampleData = response.data;
-                    this.sampleLoading = false;
-                  })
-            });
-          },
-          methods: {
-            toggleLayer(layer) {
-              // the layer has been initialized
-              if (layer.mapLayer) {
-                if (layer.show) {
-                  // remove the layer from the map
-                  this.map.overlayMapTypes.removeAt(layer.mapIndex);
-                } else {
-                  layer.mapIndex = this.map.overlayMapTypes.length;
-                  this.map.overlayMapTypes.push(layer.mapLayer);
-                }
-                layer.show = !layer.show;
-              } else {
-                this.layerLoading = true;
-                let mapLayerUrl = `/map/{{collection_id}}/${layer.layer_id}`;
-                if (`{{collection_id}}` === 'tcf') {
-                  mapLayerUrl += `?year=` + this.collSelectedYear;
-                }
-                axios.get(mapLayerUrl).then(response => {
-                  this.layerLoading = false;
-                  var m = response.data.map
-                  layer.mapLayer = new ee.layers.ImageOverlay(getTileSource(m.mapid, m.token));
-                  layer.show = true;
-                  layer.mapLayer.setOpacity(DEFAULT_OPACITY);
-                  layer.mapIndex = this.map.overlayMapTypes.length;
-                  this.map.overlayMapTypes.push(layer.mapLayer);
-                })
-              }
             },
-            updateOpacity(layer) {
-              if (layer.mapLayer) {
-                layer.mapLayer.setOpacity(layer.opacity);
-              }
+            fullscreenControl: true,
+            fullscreenControlOptions: {
+              position: google.maps.ControlPosition.TOP_RIGHT
+
             },
-            clearSample() {
-              this.lat = null;
-              this.lng = null;
-              this.sampleData = {};
-              this.marker.setMap(null);
+            mapTypeControl: true,
+            mapTypeControlOptions: {
+              position: google.maps.ControlPosition.TOP_CENTER,
+              style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR
+
             },
-          },
-          filters: {
-            formatNumber(value) {
-              if (typeof value == 'number') {
-                return +value.toFixed(2)
-              } else if (value === null) {
-                return 'no-value';
-              }
-              return value;
+            zoomControl: true,
+            zoomControlOptions: {
+              style: google.maps.ZoomControlStyle.LARGE,
+              position: google.maps.ControlPosition.RIGHT_TOP
             }
-          },
-          watch: {
-            // value: function (val) {
-            //   this.layer.setOpacity(val/100)
-            // }
-            collSelectedYear: function (val) {
-              this.layers.forEach((layer, i) => {
-                if (layer.show) {
-                  this.map.overlayMapTypes.removeAt(layer.mapIndex);
-                  layer.mapLayer = undefined;
-                  this.toggleLayer(layer);
-                }
+          };
+          this.map = new google.maps.Map(document.getElementById('map'), mapOptions);
+          this.$nextTick(() => {
+            // let layer = this.layers.find(x => x.layer_id === this.selectedLayer);
+            // layer.mapLayer = new ee.layers.ImageOverlay(getTileSource());
+            // layer.visible = layer.show;
+            // layer.mapLayer.setOpacity(DEFAULT_OPACITY);
+            // layer.mapIndex = this.map.overlayMapTypes.length;
+            // this.map.overlayMapTypes.push(layer.mapLayer);
+            let selectedLayers = this.layers.filter(x => x.show === true);
+            selectedLayers.forEach((layer, i) => {
+              this.toggleLayer(layer);
+            })
+          })
+          google.maps.event.addListener(this.map, 'click', (event) => {
+            this.lat = event.latLng.lat()
+            this.lng = event.latLng.lng()
+            this.sampleLoading = true;
+            this.sampleData = false;
+            if (this.marker) {
+              this.marker.setMap(null);
+            }
+            this.marker = new google.maps.Marker({
+              position: event.latLng
+            });
+            this.marker.setMap(this.map);
+
+            // To add the marker to the map, call setMap();
+            this.marker.setMap(this.map);
+            let sampleUrl = `/sample/{{collection_id}}/${this.lng.toFixed(3)}/${this.lat.toFixed(3)}`;
+            axios.get(sampleUrl)
+              .then((response) => {
+                this.sampleData = response.data;
+                this.sampleLoading = false;
+              })
+          });
+        },
+        methods: {
+          toggleLayer(layer) {
+            // the layer has been initialized
+            if (layer.mapLayer) {
+              if (layer.show) {
+                // remove the layer from the map
+                this.map.overlayMapTypes.removeAt(layer.mapIndex);
+              } else {
+                layer.mapIndex = this.map.overlayMapTypes.length;
+                this.map.overlayMapTypes.push(layer.mapLayer);
+              }
+              layer.show = !layer.show;
+            } else {
+              this.layerLoading = true;
+              let mapLayerUrl = `/map/{{collection_id}}/${layer.layer_id}`;
+              axios.get(mapLayerUrl).then(response => {
+                this.layerLoading = false;
+                var m = response.data.map
+                layer.mapLayer = new ee.layers.ImageOverlay(getTileSource(m.mapid, m.token));
+                layer.show = true;
+                layer.mapLayer.setOpacity(DEFAULT_OPACITY);
+                layer.mapIndex = this.map.overlayMapTypes.length;
+                this.map.overlayMapTypes.push(layer.mapLayer);
               })
             }
           },
-          computed: {
-            collSelectedYear() {return TCF_YEAR_MAX;}
-          },
-          data: function () {
-            var collection = JSON.parse('{{ collection | tojson }}')
-            var layers =  Object.values(collection.layers)
-            layers.sort(x => x.index)
-            var selectedLayer = '{{layer_id}}'
-            layers.forEach((layer, i) => {
-              layer.gmapsLayer = null;
-              layer.selected = layer.layer_id === selectedLayer;
-              layer.opacity = DEFAULT_OPACITY;
-            })
-            return {
-              place: '',
-              layers: layers,
-              selectedLayer,
-              map: null,
-              lat: null, 
-              lng: null,
-              title: collection.title, 
-              sampleData: {},
-              sampleLoading: false,
-              layerLoading: false,
-              marker: null,
-              collYears: getTCFYears(),
-              collSelectedYear: TCF_YEAR_DEFAULT
+          updateOpacity(layer) {
+            if (layer.mapLayer) {
+              layer.mapLayer.setOpacity(layer.opacity);
             }
           },
-        });
-
-        // init the toasts
-        var toastElList = [].slice.call(document.querySelectorAll('.toast'))
-        var toastList = toastElList.map(function (toastEl) {
-          return new bootstrap.Toast(toastEl, {autohide: false})
-        })
-        toastList.forEach(t => t.show())
-        // $('.toast').toast('show', {autohide: false})
+          clearSample() {
+            this.lat = null;
+            this.lng = null;
+            this.sampleData = {};
+            this.marker.setMap(null);
+          },
+        },
+        filters: {
+          formatNumber(value) {
+            if (typeof value == 'number') {
+              return +value.toFixed(2)
+            } else if (value === null) {
+              return 'no-value';
+            }
+            return value;
+          }
+        },
+        watch: {
+          // value: function (val) {
+          //   this.layer.setOpacity(val/100)
+          // }
+        },
+        data: function () {
+          var collection = JSON.parse('{{ collection | tojson }}')
+          var layers = Object.values(collection.layers)
+          layers.sort(x => - x.index)
+          var selectedLayer = '{{layer_id}}';
+          layers.forEach((layer, i) => {
+            layer.gmapsLayer = null;
+            layer.selected = layer.layer_id === selectedLayer;
+            layer.visible = layer.show;
+            if (layer.opacity === undefined) {
+              layer.opacity = DEFAULT_OPACITY;
+            }
+          })
+          return {
+            place: '',
+            layers: layers,
+            selectedLayer,
+            map: null,
+            lat: null,
+            lng: null,
+            title: collection.title,
+            sampleData: {},
+            sampleLoading: false,
+            layerLoading: false,
+            marker: null
+          }
+        },
       });
-      
 
-    </script>
+      // init the toasts
+      var toastElList = [].slice.call(document.querySelectorAll('.toast'))
+      var toastList = toastElList.map(function (toastEl) {
+        return new bootstrap.Toast(toastEl, { autohide: false });
+      })
+      toastList.forEach(t => t.show())
+      // $('.toast').toast('show', {autohide: false})
+    });
+  </script>
 
-  
-  </body>
+
+</body>
+
 </html>
