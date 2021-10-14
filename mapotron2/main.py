@@ -347,13 +347,6 @@ def sample(collection_id, x, y):
     return jsonify(response)
 
 
-@app.route('/favicon.ico')
-def favicon():
-    """Return the favicon."""
-
-    return '', 200, {}
-
-
 @app.route('/')
 def index():
     """Return a friendly HTTP greeting."""
