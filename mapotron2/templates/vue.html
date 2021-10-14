@@ -52,6 +52,8 @@
       font-weight: 500;
       font-size: 13px;
       border-top: 1px #eee solid;
+      padding-top: 8px;
+      padding-bottom: 8px;
     }
 
     /* .non-active-layer {
@@ -91,6 +93,14 @@
 
     .form-check-input {
       float: right;
+    }
+
+    table tbody tr td {
+      border-width: 0.2px;
+    }
+    .selected {
+      color: red;
+      font-size: 1.1em;;
     }
     .slideerr {
       padding: 7px 0px;
@@ -138,7 +148,7 @@
               <span class="visually-hidden">Loading...</span>
             </div>
           </div>
-          <div class="toast-body" v-if="Object.keys(sampleData).length > 0">
+          <div class="toast-body" v-if="Object.keys(sampleData).length > 0 && collection_id != 'mountains'">
             <table class="table">
               <thead>
                 <tr>
@@ -149,13 +159,47 @@
               </thead>
               <tbody>
                 <tr v-for="layer,val in sampleData">
-                  <th scope="row">{{"layer[0]['title']" | vue }}</th>
+                  <th :class="{selected: layer[0]['show']}" scope="row">{{"layer[0]['title']" | vue }} {{"layer[0]['show'] ? ' (selected)' : ''"|vue}} </th>
                   <td scope="row" v-html="$options.filters.formatNumber(layer[0]['values']['b1'])">
                     {{"layer[0]['values']['b1']" | vue }}</td>
                   <td scope="row">{{"layer[0]['units']" | vue }}</td>
                 </tr>
               </tbody>
             </table>
+          </div>
+          <div v-if="collection_id == 'mountains'">
+            <div v-for="layer, val in sampleData">
+              <div v-if="val == 'basic'">
+                <!-- <strong style="padding-left: 10px" class="me-auto">GMBA Mountain Inventory v2</strong> -->
+                <div>
+                  <table class="table" style="margin-bottom: 0;">
+                    <thead>
+                      <tr>
+                        <th scope="col">Name</th>
+                        <th scope="col">Value</th>
+                      </tr>
+                    </thead>
+                    <tbody v-for="feat, val in layer.slice(paginIndex, paginIndex +1)">
+                      <!-- <pre>{{"layer"|vue}}</pre> -->
+                      <tr v-for="v, k in feat['values']" >
+                        <template v-if="k !== 'WikiDataURL'">
+                          <td scope="row">{{"k.replace('_', ' ')" | vue }}</td>
+                          <td scope="row"  v-if="k !== 'WikiDataID' || ( k === 'WikiDataID' && !feat.values.WikiDataURL)">{{"v" | vue }}</td>
+                          <td scope="row"  v-else><span>
+                            <a :href="feat.values.WikiDataURL" target="_blank">{{"feat.values.WikiDataID" | vue }}</a>
+                          </span></td>
+                        </template>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div style="display:flex; flex-direction: row; justify-content: center; align-items:center;">
+                  <button @click="paginator(-1)" class="btn" :disabled="paginIndex === 0"><</button>
+                  <span>{{"paginIndex + 1"|vue}} / {{"layer.length"|vue}}</span>
+                  <button @click="paginator(1)" class="btn" :disabled="paginIndex === (layer.length-1)">></button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -190,6 +234,7 @@
       new Vue({
         el: '#root',
         mounted: function () {
+
           const myLatLng = new google.maps.LatLng(0, 0);
           const urlParams = new URLSearchParams(window.location.search);
           const embed = urlParams.get('embed');
@@ -240,6 +285,7 @@
             this.lat = event.latLng.lat()
             this.lng = event.latLng.lng()
             this.sampleLoading = true;
+            this.paginIndex = 0;
             this.sampleData = false;
             if (this.marker) {
               this.marker.setMap(null);
@@ -254,6 +300,12 @@
             axios.get(`/sample/{{collection_id}}/${this.lng}/${this.lat}`)
               .then((response) => {
                 this.sampleData = response.data;
+                if (this.collection_id != 'mountains') {
+                  Object.keys(this.sampleData).forEach(k => {
+                    var theLayer = this.layers.find(l => l.layer_id === k)
+                    this.sampleData[k][0]['show'] = theLayer.show;
+                  })
+                }
                 this.sampleLoading = false;
                 console.log('sampleData:', this.sampleData)
               })
@@ -266,9 +318,10 @@
             if (layer.mapLayer) {
               if (layer.show) {
                 // remove the layer from the map
-                this.map.overlayMapTypes.removeAt(layer.mapIndex);
+                var arr = this.map.overlayMapTypes.getArray();
+                var i = this.map.overlayMapTypes.getArray().findIndex(x => x === layer.mapLayer);
+                this.map.overlayMapTypes.removeAt(i);
               } else {
-                layer.mapIndex = this.map.overlayMapTypes.length;
                 this.map.overlayMapTypes.push(layer.mapLayer);
               }
               layer.show = !layer.show;
@@ -280,11 +333,12 @@
                 layer.mapLayer = new ee.layers.ImageOverlay(getTileSource(m.mapid, m.token));
                 layer.show = true;
                 layer.mapLayer.setOpacity(DEFAULT_OPACITY);
-                layer.mapIndex = this.map.overlayMapTypes.length;
                 this.map.overlayMapTypes.push(layer.mapLayer);
               })
             }
-
+          },
+          paginator(i){
+            this.paginIndex += i;
           },
           updateOpacity(layer) {
             if (layer.mapLayer) {
@@ -313,6 +367,7 @@
         },
         data: function () {
           var collection = JSON.parse('{{ collection | tojson }}')
+          
           var layers = Object.values(collection.layers)
           layers.sort(x => - x.index)
           var selectedLayer = '{{layer_id}}'
@@ -324,8 +379,10 @@
           })
           return {
             place: '',
+            paginIndex: 0,
             layers: layers,
             selectedLayer,
+            collection_id: '{{collection_id}}',
             map: null,
             lat: null,
             lng: null,
@@ -333,7 +390,7 @@
             sampleData: {},
             sampleLoading: false,
             layerLoading: false,
-            marker: null
+            marker: null,
           }
         },
       });

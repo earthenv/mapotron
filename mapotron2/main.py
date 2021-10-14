@@ -159,8 +159,8 @@ def vue(collection_id):
     if collection_id == 'tcf':
         return render_template('tcf.html', **map_info)
     
-    if collection_id == 'mountains':
-        return render_template('mountains.html', **map_info)
+    # if collection_id == 'mountains':
+    #     return render_template('mountains.html', **map_info)
     
     return render_template('vue.html', **map_info)
 
