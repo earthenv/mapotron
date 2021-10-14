@@ -11,6 +11,7 @@ import config
 import ee_config
 
 app = Flask(__name__)
+app.config['JSON_SORT_KEYS'] = False
 app.config.update(
     GMAPS_KEY=config.GMAPS_KEY
 )
@@ -164,6 +165,13 @@ def sample(collection_id, x, y):
             logging.info(e)
 
     return jsonify(response)
+
+
+@app.route('/favicon.ico')
+def favicon():
+    """Return the favicon."""
+
+    return '', 200, {}
 
 
 @app.route('/')
