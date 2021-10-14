@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{collection.title}}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
+    <style type="text/css">
+      html { height: 100% }
+      body { height: 100%; margin: 0; padding: 0px;}
+      table tbody tr td { border-width: 0.2px; }
+      #map { width: 100%; height: 100%;}
+      #toastPlacement {
+        position: absolute;
+        top: 0px;
+        left: 0;
+      }
+      #toastPlacementRight {
+        position: absolute;
+        top: 0px;
+        right: 50px;
+      }
+      #toastPlacementRight .toast {
+        width: 500px;
+      }
+      .toast-header {
+        padding: 0.6rem .75rem;
+      }
+      #layer-toast > .toast-body {
+        max-height: 80vh;
+        overflow-y: scroll;
+      }
+      .layer-toast > .toast-body {
+        max-height: 80vh;
+        overflow-y: scroll;
+      }
+
+      .active-layer {
+        font-weight: 500;
+        font-size: 18px;
+      }
+      .non-active-layer {
+        font-weight: 200;
+        font-size: 12px;
+      }
+      .layer-control {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        padding: 5px 0;
+        width: 100%;
+      }
+      .layer-control > span {
+        min-width: 60%;
+        cursor: pointer;
+      }
+      .layer-control > .slide {
+        min-width: 40%;
+      }
+      #sample-spinner {
+        /* margin: 5px; */
+        margin-left: 10px;
+        height: 20px;
+        width: 20px;
+      }
+      #layer-spinner {
+        height: 20px;
+        width: 20px;
+      }
+      .small-line-chart {
+        position: relative;
+        width: 100%;
+        height: 100px;
+        /* max-width: 100px; */
+      }
+      .btn-download {
+        font-size: .775rem;
+        line-height: 1.25;
+      }
+  </style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vue-slider-component@latest/theme/default.css">
+
+
+</head>
+<body>
+  <div id="map"></div>
+    <div id="root">
+      <div>
+        <div class="toast-container position-absolute p-2" id="toastPlacement">
+          <div id="layer-toast" class="toast">
+            <div class="toast-header">
+              <strong class="me-auto">{{collection.title}}</strong>
+              <!-- <small>11 mins ago</small> -->
+              <div v-if="layerLoading" id="layer-spinner" class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+            </div>
+            <div class="toast-body">
+              <div v-for="layer in layers" :class="{ 'active-layer': layer.show, 'not-layer': !layer.show, 'layer-control': true }">
+                <span v-on:click="toggleLayer(layer)">{{"layer.title"|vue}}</span>
+                <vue-slider
+                  class="slide"
+                  tooltip="none"
+                  :min="0"
+                  :max="1"
+                  :interval="0.01"
+                  v-model="layer.opacity"
+                  v-on:change="updateOpacity(layer)"
+                ></vue-slider>
+              </div>
+              <div v-if="`{{collection_id}}` === 'tcf'">
+                <select class="form-control" v-model="collSelectedYear">
+                  <option v-for="yr in collYears" :value="yr" :key="yr">{{ "yr" | vue}}</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="toast-container position-absolute p-2" id="toastPlacementRight">
+          <div id="layer-toast" class="toast">
+            <div class="toast-header">
+              <strong class="me-auto">Sample</strong>
+              <small v-if="lat && lng">Lng: {{"lng.toFixed(3)"|vue}}, Lat: {{"lat.toFixed(3)"|vue}}</small>
+              <small v-if="!(lat && lng)">Click on the map to get values at that point</small>
+              <button v-if="lat && lng && !sampleLoading" type="button" class="btn-close" v-on:click="clearSample" aria-label="Close"></button>
+              <div v-if="sampleLoading" id="sample-spinner" class="spinner-border text-primary " role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+            </div>
+            <!-- <div class="toast-body" v-if="Object.keys(sampleData).length > 0">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th scope="col">Layer</th>
+                    <th scope="col">Value</th>
+                    <th scope="col">Unit</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="layer,val in sampleData">
+                    <th scope="row">{{"layer[0]['title']" | vue }}</th>
+                    <td scope="row" v-html="$options.filters.formatNumber(layer[0]['values']['b1'])">{{"layer[0]['values']['b1']" | vue }}</td>
+                    <td scope="row">{{"layer[0]['units']" | vue }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div> -->
+            <div class="toast-body" v-if="Object.keys(sampleData).length > 0">
+              <div v-for="layer,val in sampleData">
+                <div v-if="val == 'tcf_ensemble_mnv16_2001-2018'">
+                  <hr />
+                  <strong>{{"layer[0]['title']" | vue }}:</strong>
+                  <em>{{"layer[0]['values']['b1']" | vue }}%</em>
+                </div>
+                <div v-if="val == 'tcf_wdpa_Dec2016_v16'">
+                  <hr />
+                  <strong>{{"layer[0]['title']" | vue }}</strong>
+                  <div>
+                    <table class="table">
+                      <thead>
+                        <tr>
+                          <th scope="col">NAME</th>
+                          <th scope="col">ISO3</th>
+                          <th scope="col">IUCN_CAT</th>
+                          <th scope="col">STATUS</th>
+                          <th scope="col">TCF_2001 (km<sup>2</sup>)</th>
+                          <th scope="col">TCF_2018 (km<sup>2</sup>)</th>
+                          <th scope="col">TCF_Loss (km<sup>2</sup>)</th>
+                          <th scope="col">TCF_Loss (percent)</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr v-for="feat,val in layer">
+                          <td scope="row">{{"feat['values']['NAME']" | vue }}</td>
+                          <td scope="row">{{"feat['values']['ISO3']" | vue }}</td>
+                          <td scope="row">{{"feat['values']['IUCN_CAT']" | vue }}</td>
+                          <td scope="row">{{"feat['values']['STATUS']" | vue }}</td>
+                          <td scope="row">{{"feat['values']['tcfensmn01']" | vue }}</td>
+                          <td scope="row">{{"feat['values']['tcfensmn18']" | vue }}</td>
+                          <td scope="row">{{"feat['values']['tcfensmnvar']" | vue }}</td>
+                          <td scope="row">{{"feat['values']['tcfensmnpct']" | vue }}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                <div v-if="val == 'tcf_ensemble_mn_v16'">
+                  <hr />
+                  <strong>{{"layer[0]['title']" | vue }}</strong>
+                  <!-- <span><button v-on:click="downloadChartData(layer[0])" type="button" class="btn btn-link btn-sm btn-download">Download values as CSV</button></span> -->
+                  <div style="position: relative; height:55vh; width:55vw;">
+                    <line-chart ref='chart' :chart-data="generateChartData(layer[0])" :options="chartOptions"></line-chart>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="https://maps.googleapis.com/maps/api/js?key={{config.GMAPS_KEY}}"></script>
+    <!-- make it non min vue for development -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.0/vue.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue-slider-component@latest/dist/vue-slider-component.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
+    <script src="https://unpkg.com/chartjs-plugin-error-bars@1.2.3"></script>
+    <script src="https://unpkg.com/vue-chartjs/dist/vue-chartjs.min.js"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/chart.js@3.1.1/dist/chart.min.js"></script> -->
+    <!-- <script src="https://unpkg.com/vue-chartjs@3.5.1/dist/vue-chartjs.min.js"></script> -->
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.1"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@0.1.2"></script>
+    <script src="/static/ee_api_js.js"></script>
+    <script src="/static/mapstyles.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
+    <script>
+      const EE_MAP_PATH = 'https://earthengine.googleapis.com/v1alpha';
+      const DEFAULT_OPACITY = 0.65;
+      const TCF_YEAR_MIN = 2001;
+      const TCF_YEAR_MAX = 2018;
+      const TCF_YEAR_DEFAULT = TCF_YEAR_MAX;
+      document.addEventListener('DOMContentLoaded', function() {
+        var getTileSource = function(mapid= '{{map.mapid}}', token = '{{map.token}}') {
+          return new ee.layers.EarthEngineTileSource({
+              mapid,
+              token,
+              formatTileUrl: (x, y, z) =>
+                `${EE_MAP_PATH}/${mapid}/tiles/${z}/${x}/${y}`
+            })
+        }
+        Vue.component('vueSlider', window[ 'vue-slider-component' ]);
+
+        Vue.component('line-chart', {
+          extends: VueChartJs.Line,
+          mixins: [VueChartJs.mixins.reactiveData],
+          data: () => ({
+            chartData: '',
+            options: {
+              scales: {
+                yAxes: [{
+                  ticks: {
+                    min: 0,
+                    max: 100
+                  }
+                }]
+              },
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                chartJsPluginErrorBars: {
+                  color: '#f46d43',
+                }
+              }
+            }
+          }),
+          mounted () {
+            this.renderChart(this.chartData, {responsive: true, maintainAspectRatio: false});
+          }
+        });
+
+        function getDates(startDate, endDate, interval) {
+          const duration = endDate - startDate;
+          const steps = duration / interval;
+          return Array.from({length: steps+1}, (v,i) => new Date(startDate.valueOf() + (interval * i)));
+        }
+        function getTCFDates(year) {
+          if (year === undefined) { year = TCF_YEAR_DEFAULT; }
+          const startDate = new Date(TCF_YEAR_MIN,0,1);
+          const endDate = new Date(TCF_YEAR_MAX,0,1);
+          const dayInterval = 1000 * 60 * 60 * 24 * 365; // 1 day
+          const yearInterval = dayInterval * 365; // 1 year
+          return getDates(startDate, endDate, yearInterval);
+        }
+        function getTCFYears() {
+          // 2001 - 2018 = 18 years
+          return Array.from(new Array(18),(val,index)=>index+TCF_YEAR_MIN);
+        }
+  
+        new Vue({
+          el: '#root',
+          mounted: function() {
+            const myLatLng = new google.maps.LatLng(0, 0);
+            const urlParams = new URLSearchParams(window.location.search);
+            const embed = urlParams.get('embed');
+            const basemap = urlParams.get('basemap');
+            const mapOptions = {
+              scrollwheel: (embed !== 'true'),
+              streetViewControl: false,
+              panControl: false,
+              maxZoom: 18,
+              minZoom: 1,
+              center: myLatLng,
+              zoom: 3,
+              styles: styles,
+              rotateControl: true,
+              mapTypeId: (basemap==='earth') ? google.maps.MapTypeId.SATELLITE : google.maps.MapTypeId.ROADMAP,
+              rotateControlOptions: {
+                position: google.maps.ControlPosition.TOP_RIGHT
+
+              },
+              fullscreenControl: true,
+              fullscreenControlOptions: {
+                position: google.maps.ControlPosition.TOP_RIGHT
+
+              },
+              mapTypeControl: true,
+              mapTypeControlOptions: {
+                position: google.maps.ControlPosition.TOP_CENTER,
+                style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR
+
+              },
+              zoomControl: true,
+              zoomControlOptions: {
+                style: google.maps.ZoomControlStyle.LARGE,
+                position: google.maps.ControlPosition.RIGHT_TOP
+              }
+            };
+            this.map = new google.maps.Map(document.getElementById('map'), mapOptions);
+            this.$nextTick(() => {
+              let layer = this.layers.find(x => x.layer_id === this.selectedLayer);
+              layer.mapLayer = new ee.layers.ImageOverlay(getTileSource());
+              layer.visible = layer.show;
+              layer.mapLayer.setOpacity(DEFAULT_OPACITY);
+              layer.mapIndex = this.map.overlayMapTypes.length;
+              this.map.overlayMapTypes.push(layer.mapLayer);
+            })
+            google.maps.event.addListener(this.map, 'click', (event) => {
+                this.lat = event.latLng.lat()
+                this.lng = event.latLng.lng()
+                this.sampleLoading = true;
+                this.sampleData = false;
+                if (this.marker) {
+                  this.marker.setMap(null);
+                }
+                this.marker = new google.maps.Marker({
+                    position: event.latLng
+                });
+                this.marker.setMap(this.map);
+
+                // To add the marker to the map, call setMap();
+                this.marker.setMap(this.map);
+                let sampleUrl = `/sample/{{collection_id}}/${this.lng.toFixed(3)}/${this.lat.toFixed(3)}`;
+                if (`{{collection_id}}` === 'tcf') {
+                  sampleUrl += `?year=` + this.collSelectedYear;
+                }
+                axios.get(sampleUrl)
+                  .then((response) => {
+                    this.sampleData = response.data;
+                    this.sampleLoading = false;
+                  })
+            });
+          },
+          methods: {
+            toggleLayer(layer) {
+              // the layer has been initialized
+              if (layer.mapLayer) {
+                if (layer.show) {
+                  // remove the layer from the map
+                  this.map.overlayMapTypes.removeAt(layer.mapIndex);
+                } else {
+                  layer.mapIndex = this.map.overlayMapTypes.length;
+                  this.map.overlayMapTypes.push(layer.mapLayer);
+                }
+                layer.show = !layer.show;
+              } else {
+                this.layerLoading = true;
+                let mapLayerUrl = `/map/{{collection_id}}/${layer.layer_id}`;
+                if (`{{collection_id}}` === 'tcf') {
+                  mapLayerUrl += `?year=` + this.collSelectedYear;
+                }
+                axios.get(mapLayerUrl).then(response => {
+                  this.layerLoading = false;
+                  var m = response.data.map
+                  layer.mapLayer = new ee.layers.ImageOverlay(getTileSource(m.mapid, m.token));
+                  layer.show = true;
+                  layer.mapLayer.setOpacity(DEFAULT_OPACITY);
+                  layer.mapIndex = this.map.overlayMapTypes.length;
+                  this.map.overlayMapTypes.push(layer.mapLayer);
+                })
+              }
+            },
+            updateOpacity(layer) {
+              if (layer.mapLayer) {
+                layer.mapLayer.setOpacity(layer.opacity);
+              }
+            },
+            clearSample() {
+              this.lat = null;
+              this.lng = null;
+              this.sampleData = {};
+              this.marker.setMap(null);
+            },
+            generateChartData(layerData) {
+              if (this.$refs.chart && this.$refs.chart.length > 0) {
+                let histvals = layerData['values']['histogram'];
+                let sdvals = layerData['values']['stdev'];
+                const hist_dates = getTCFYears(); // getTCFDates(this.collSelectedYear);
+                const hist_values = histvals.split(",").map(v => Number(v));
+                let hist_sd = {};
+                let minTickValue = 0;
+                let maxTickValue = 100;
+                sdvals.split(",").forEach(function(v, i) {
+                  const currentDate = hist_dates[i];
+                  const currentError = Number(v) / 2;
+                  hist_sd[currentDate] = {plus: currentError, minus: currentError};
+                  minTickValue = Math.min(minTickValue, (hist_values[i]-Number(v)));
+                  maxTickValue = Math.min(maxTickValue, (hist_values[i]+Number(v)));
+                });
+                var myChartData = {
+                  labels: hist_dates,
+                  datasets: [
+                    {
+                      label: `${layerData['title']} (${layerData['units']})`,
+                      backgroundColor: '#4575B4',
+                      borderColor: '#4575B4',
+                      borderWidth: 2,
+                      pointRadius: 0,
+                      fill: false,
+                      data: hist_values,
+                      errorBars: hist_sd
+                    }
+                  ]
+                };
+                this.$refs.chart[0].chartData = myChartData;
+                // this.chartOptions['scales'] = {yAxes: {ticks: {min: minTickValue, max: maxTickValue}}};
+                // this.$refs.chart[0].options = this.chartOptions;
+              }
+              return null;
+            },
+            downloadChartData(layerData) {
+              if (this.$refs.chart && this.$refs.chart.length > 0) {
+                let histvals = layerData['values']['histogram'];
+                // const hist_dates = getTCFDates(this.collSelectedYear).map(d => d.toISOString().slice(0, 10));
+                const hist_dates = getTCFYears();
+                const hist_values = histvals.split(",").map(v => Number(v) * 0.01);
+                
+                const hist_data = [];
+                for (var i = 0; i<hist_dates.length; i++) {
+                  const row_data = [hist_dates[i], hist_values[i]]
+                  hist_data.push(row_data.join(","));
+                }
+                
+                let dl_data = "date,value\n" + hist_data.join("\n");
+                const dl_filename = `chelsa_earthenv-precip_rate_${this.collSelectedYear}.csv`;
+                const dl_link = document.createElement("a");
+                dl_link.href = URL.createObjectURL(new Blob([dl_data], { type: "text/csv" }));
+                dl_link.setAttribute("download", dl_filename);
+                document.body.appendChild(dl_link);
+                dl_link.click();
+                document.body.removeChild(dl_link);
+              }
+              return null;
+            },
+          },
+          filters: {
+            formatNumber(value) {
+              if (typeof value == 'number') {
+                return +value.toFixed(2)
+              } else if (value === null) {
+                return 'no-value';
+              }
+              return value;
+            }
+          },
+          watch: {
+            // value: function (val) {
+            //   this.layer.setOpacity(val/100)
+            // }
+            collSelectedYear: function (val) {
+              this.layers.forEach((layer, i) => {
+                if (layer.show) {
+                  this.map.overlayMapTypes.removeAt(layer.mapIndex);
+                  layer.mapLayer = undefined;
+                  this.toggleLayer(layer);
+                }
+              })
+            }
+          },
+          computed: {
+            collSelectedYear() {console.log('aaa'); return TCF_YEAR_MAX;}
+          },
+          data: function () {
+            var collection = JSON.parse('{{ collection | tojson }}')
+            var layers =  Object.values(collection.layers)
+            layers.sort(x => x.index)
+            var selectedLayer = '{{layer_id}}'
+            layers.forEach((layer, i) => {
+              layer.gmapsLayer = null;
+              layer.selected = layer.layer_id === selectedLayer;
+              layer.opacity = DEFAULT_OPACITY;
+            })
+            return {
+              place: '',
+              layers: layers,
+              selectedLayer,
+              map: null,
+              lat: null, 
+              lng: null,
+              title: collection.title, 
+              sampleData: {},
+              sampleLoading: false,
+              layerLoading: false,
+              marker: null,
+              collYears: getTCFYears(),
+              collSelectedYear: TCF_YEAR_DEFAULT,
+              chartData: null,
+              chartOptions: {
+                responsive: true, 
+                maintainAspectRatio: false
+              }
+            }
+          },
+        });
+
+        // init the toasts
+        var toastElList = [].slice.call(document.querySelectorAll('.toast'))
+        var toastList = toastElList.map(function (toastEl) {
+          return new bootstrap.Toast(toastEl, {autohide: false})
+        })
+        toastList.forEach(t => t.show())
+        // $('.toast').toast('show', {autohide: false})
+      });
+      
+
+    </script>
+
+  
+  </body>
+</html>

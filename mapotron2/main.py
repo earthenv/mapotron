@@ -56,6 +56,26 @@ def get_image(collection_id, layer_id, coll_year=None):
         imgByYear = ee.ImageCollection('projects/earthenv/chelsa/daily_precip_land_v21').filterDate(prec_start_date, prec_end_date).mean().multiply(0.01)
         return ee.Image(imgByYear), collection, layer
 
+    if collection_id == 'tcf':
+        if layer_id == 'tcf_ensemble_mn_v16':
+            tcf_start_date = '2018-01-01'
+            try:
+                if coll_year is not None:
+                    tcf_start_date = f"{int(coll_year)}-01-01"
+            except Exception as ex:
+                raise Exception(f'Invalid TCF date.')
+            
+            imgByYear = ee.ImageCollection(layer['id']).filterDate(tcf_start_date).first().divide(100)
+            return ee.Image(imgByYear), collection, layer
+        
+        if layer_id == 'tcf_ensemble_mnv16_2001-2018':
+            imgVariable = ee.Image(layer['id']).divide(100)
+            return ee.Image(imgVariable), collection, layer
+        
+        if layer_id == 'tcf_wdpa_Dec2016_v16':
+            imgOutline = ee.Image(0).mask(0).paint(ee.FeatureCollection(layer['id']), 1, 2)
+            return ee.Image(imgOutline), collection, layer
+
     logging.info(f'Generating new map from: {layer["id"]}')
 
     return ee.Image(layer["id"]), collection, layer
@@ -66,6 +86,10 @@ def get_map(collection_id, layer_id, coll_year=None):
     # this is where I imagine putting .clip(bbox)...
     geodesic = ee.Geometry.Rectangle(-180, -85, 180, 85)
     bbox = ee.Geometry(geodesic, None, False)
+
+    if layer_id != 'tcf_ensemble_mnv16_2001-2018':
+        image = image.mask(image.gt(0))
+    
     mapid = image.getMapId(layer["viz_params"])
     
     return {
@@ -90,11 +114,12 @@ def hello():
 def map(collection_id, layer_id):
     """Return a friendly HTTP greeting."""
 
-    map_info = get_map(collection_id, layer_id)
     coll_year = request.args.get("year", None)
     
     if collection_id == 'precipitation' and coll_year is None:
         coll_year = 2016
+    if collection_id == 'tcf' and coll_year is None:
+        coll_year = 2018
     
     map_info = get_map(collection_id, layer_id, coll_year=coll_year)
     map_info['collection'] = None
@@ -115,10 +140,16 @@ def vue(collection_id):
     
     if collection_id == 'precipitation' and coll_year is None:
         coll_year = 2016
+    if collection_id == 'tcf' and coll_year is None:
+        coll_year = 2018
+    
     map_info = get_map(collection_id, None, coll_year=coll_year)
     
     if collection_id == 'precipitation':
         return render_template('precipitation.html', **map_info)
+    
+    if collection_id == 'tcf':
+        return render_template('tcf.html', **map_info)
     
     return render_template('vue.html', **map_info)
 
@@ -155,6 +186,82 @@ def sample(collection_id, x, y):
         hist = ee.Dictionary({"histogram": hist.aggregate_array('mean').join(",")})
 
         result = ee.Feature(None).setMulti({"name": "CHELSA-EarthEnv Precipitation Rate", "title": "Precipitation Rate", "layer_id": "daily_precip_v21", "units": "kg*m^-2*day^-1", "values": hist}).getInfo()
+    elif collection_id == 'tcf_single':
+        coll_year = request.args.get("year", 2016)
+
+        tcf_start_date = '2016-01-01'
+        try:
+            if coll_year is not None:
+                tcf_start_date = f"{int(coll_year)}-01-01"
+        except Exception as ex:
+            raise Exception(f'Invalid precipitation date.')
+        for k in collection['layers']:
+            v = collection['layers'][k]
+            imgByYear = ee.ImageCollection(v['id']).filterDate(tcf_start_date).first().divide(100)
+            images.append(imgByYear.set(v).set("name", k).set("image", k))
+
+        result = ee.ImageCollection(images).map(
+            lambda i:
+                ee.Feature(None).copyProperties(i).set(
+                    "values", i.reduceRegion(
+                        reducer=ee.Reducer.first(),
+                        geometry=ee.Geometry.Point([x, y])))
+        ).getInfo()
+    elif collection_id == 'tcf':
+        result = {'features': []}
+        for k in reversed(collection['layers']):
+            v = collection['layers'][k]
+            if v["layer_id"] == 'tcf_ensemble_mn_v16':
+                imgMnColByYear = ee.ImageCollection('projects/earthenv/tcf/tcf_ensemble_mn_v16')
+                hist_mn = ee.FeatureCollection(imgMnColByYear.map(lambda i: i.set(i.divide(100).unmask().reduceRegion(reducer=ee.Reducer.mean(), scale=1000, geometry=ee.Geometry.Point([x, y]), maxPixels=1e8).rename(['b1'],['mean'])))).sort('system:time_start')
+                imgSdColByYear = ee.ImageCollection('projects/earthenv/tcf/tcf_ensemble_sd_v16')
+                hist_sd = ee.FeatureCollection(imgSdColByYear.map(lambda i: i.set(i.divide(100).unmask().reduceRegion(reducer=ee.Reducer.mean(), scale=1000, geometry=ee.Geometry.Point([x, y]), maxPixels=1e8).rename(['b1'],['mean'])))).sort('system:time_start')
+                hist = ee.Dictionary({"histogram": hist_mn.aggregate_array('mean').join(","), "stdev": hist_sd.aggregate_array('mean').join(",")})
+                res = ee.Feature(None).setMulti({"name": "tcf_ensemble_mn_v16", "title": "Percent of area covered", "layer_id": "tcf_ensemble_mn_v16", "units": "percent area covered", "values": hist}).getInfo()
+                result['features'].append(res)
+            elif v["layer_id"] == 'tcf_ensemble_mnv16_2001-2018':
+                images.append(ee.Image(v["id"]).set(v).set("name", k).set("image", k))
+                res = ee.ImageCollection(images).map(
+                    lambda i:
+                        ee.Feature(None).copyProperties(i).set(
+                            "values", i.reduceRegion(
+                                reducer=ee.Reducer.first(),
+                                geometry=ee.Geometry.Point([x, y])))
+                ).getInfo()
+                result['features'].append(res['features'][0])
+            elif v["layer_id"] == 'tcf_wdpa_Dec2016_v16':
+                tcf_fc = ee.FeatureCollection(v['id']).filterBounds(ee.Geometry.Point([x, y]))
+                res = tcf_fc.getInfo()
+                if "features" in res:
+                    for f in res['features']:
+                        tcfensmn01 = f['properties']['tcfensmn01'] / 10000
+                        tcfensmn18 = f['properties']['tcfensmn18'] / 10000
+                        tcfensmnvar = tcfensmn01 - tcfensmn18
+                        tcfensmnpct = (tcfensmnvar/tcfensmn01) * 100
+                        result['features'].append({
+                            "type": "Feature",
+                            "geometry": None,
+                            "id": "0",
+                            "properties": {
+                                "id": v["id"],
+                                "layer_id": v["layer_id"],
+                                "name": v["layer_id"],
+                                "show": v["show"],
+                                "title": v["title"],
+                                "values": {
+                                    'NAME': f['properties']['NAME'],
+                                    'ISO3': f['properties']['ISO3'],
+                                    'IUCN_CAT': f['properties']['IUCN_CAT'],
+                                    'STATUS': f['properties']['STATUS'],
+                                    'STATUS_YR': f['properties']['STATUS_YR'],
+                                    'WDPAID': f['properties']['WDPAID'],
+                                    'tcfensmn01': f"{tcfensmn01:.4f}",
+                                    'tcfensmn18': f"{tcfensmn18:.4f}",
+                                    'tcfensmnvar': f"{tcfensmnvar:.4f}",
+                                    'tcfensmnpct': f"{tcfensmnpct:.2f}%",
+                                }
+                            },
+                        })
     else:
         for k in collection['layers']:
             v = collection['layers'][k]
