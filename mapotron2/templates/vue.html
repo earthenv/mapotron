@@ -78,6 +78,9 @@
       min-width: 25%;
       right: -8%;
     }
+    .info-icon {
+      cursor: pointer;
+    }
 
     #sample-spinner {
       /* margin: 5px; */
@@ -91,9 +94,9 @@
       width: 20px;
     }
 
-    .form-check-input {
+    /* .form-check-input {
       float: right;
-    }
+    } */
 
     table tbody tr td {
       border-width: 0.2px;
@@ -106,6 +109,14 @@
       padding: 7px 0px;
       max-width: 62%;
       height: 4px;
+    }
+    .page-link-text {
+      color: #000;
+    }
+    .page-link-text:hover {
+      color: #000;
+      background-color: #fff;
+      border-color: #dee2e6;
     }
   </style>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vue-slider-component@latest/theme/default.css">
@@ -127,9 +138,14 @@
           </div>
           <div class="toast-body">
             <div v-for="layer in layers" class="active-layer">
-              <span>{{"layer.title"|vue}}</span>
               <input class="form-check-input" type="checkbox" v-model="layer.visible"
                 v-on:change="toggleLayer(layer)" />
+              <span>{{"layer.title"|vue}}</span>
+              <span class="float-end info-icon" v-show="layer.info" data-bs-toggle="modal" data-bs-target="#infoModal" v-bind="{ 'data-bs-info-title': layer.title, 'data-bs-info-body': layer.info }">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle-fill" viewBox="0 0 16 16">
+                  <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
+                </svg>
+              </span>
               <vue-slider v-show="layer.show" class="slideerr" tooltip="none" :min="0" :max="1" :interval="0.01"
                 v-model="layer.opacity" v-on:change="updateOpacity(layer)"></vue-slider>
             </div>
@@ -169,11 +185,13 @@
           </div>
           <div v-if="collection_id == 'mountains'">
             <div v-for="layer, val in sampleData">
-              <div v-if="val == 'basic'">
-                <!-- <strong style="padding-left: 10px" class="me-auto">GMBA Mountain Inventory v2</strong> -->
+              <div v-if="layer[0]['show']">
                 <div>
                   <table class="table" style="margin-bottom: 0;">
                     <thead>
+                      <tr>
+                        <th colspan="2">{{"layer[0]['title']" | vue }}</th>
+                      </tr>
                       <tr>
                         <th scope="col">Name</th>
                         <th scope="col">Value</th>
@@ -193,14 +211,31 @@
                     </tbody>
                   </table>
                 </div>
-                <div style="display:flex; flex-direction: row; justify-content: center; align-items:center;">
-                  <button @click="paginator(-1)" class="btn" :disabled="paginIndex === 0"><</button>
-                  <span>{{"paginIndex + 1"|vue}} / {{"layer.length"|vue}}</span>
-                  <button @click="paginator(1)" class="btn" :disabled="paginIndex === (layer.length-1)">></button>
-                </div>
+                <!-- <div style="display:flex; flex-direction: row; justify-content: center; align-items:center;">
+                  <nav><ul class="pagination">
+                  <li class="page-item" :class="{disabled: paginIndex === 0}"><a class="page-link" href="#" @click="paginator(-1)" :disabled="paginIndex === 0"><span>&laquo;</span></a></li>
+                  <li class="page-item"><span class="page-link page-link-text">{{"paginIndex + 1"|vue}} / {{"layer.length"|vue}}</span></li>
+                  <li class="page-item" :class="{disabled: paginIndex === (layer.length-1)}"><a class="page-link" href="#" @click="paginator(1)" :disabled="paginIndex === (layer.length-1)"><span>&raquo;</span></a></li>
+                  </ul></nav>
+                </div> -->
               </div>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- InfoModal -->
+  <div class="modal fade" id="infoModal" tabindex="-1" aria-labelledby="infoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="infoModalLabel">Info</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          Please select an element to view it's info.
         </div>
       </div>
     </div>
@@ -274,12 +309,16 @@
           // layer.visible = layer.show;
           this.map = new google.maps.Map(document.getElementById('map'), mapOptions);
           this.$nextTick(() => {
-            let layer = this.layers.find(x => x.layer_id === this.selectedLayer);
-            layer.mapLayer = new ee.layers.ImageOverlay(getTileSource());
-            layer.visible = layer.show;
-            layer.mapLayer.setOpacity(DEFAULT_OPACITY);
-            layer.mapIndex = this.map.overlayMapTypes.length;
-            this.map.overlayMapTypes.push(layer.mapLayer);
+            // let layer = this.layers.find(x => x.layer_id === this.selectedLayer);
+            // layer.mapLayer = new ee.layers.ImageOverlay(getTileSource());
+            // layer.visible = layer.show;
+            // layer.mapLayer.setOpacity(DEFAULT_OPACITY);
+            // layer.mapIndex = this.map.overlayMapTypes.length;
+            // this.map.overlayMapTypes.push(layer.mapLayer);
+            let selectedLayers = this.layers.filter(x => x.show === true);
+            selectedLayers.forEach((layer, i) => {
+              this.toggleLayer(layer);
+            });
           })
           google.maps.event.addListener(this.map, 'click', (event) => {
             this.lat = event.latLng.lat()
@@ -300,14 +339,13 @@
             axios.get(`/sample/{{collection_id}}/${this.lng}/${this.lat}`)
               .then((response) => {
                 this.sampleData = response.data;
-                if (this.collection_id != 'mountains') {
+                if (this.collection_id != 'mountains_all') {
                   Object.keys(this.sampleData).forEach(k => {
                     var theLayer = this.layers.find(l => l.layer_id === k)
                     this.sampleData[k][0]['show'] = theLayer.show;
                   })
                 }
                 this.sampleLoading = false;
-                console.log('sampleData:', this.sampleData)
               })
           });
         },
@@ -318,7 +356,6 @@
             if (layer.mapLayer) {
               if (layer.show) {
                 // remove the layer from the map
-                var arr = this.map.overlayMapTypes.getArray();
                 var i = this.map.overlayMapTypes.getArray().findIndex(x => x === layer.mapLayer);
                 this.map.overlayMapTypes.removeAt(i);
               } else {
@@ -332,7 +369,7 @@
                 var m = response.data.map
                 layer.mapLayer = new ee.layers.ImageOverlay(getTileSource(m.mapid, m.token));
                 layer.show = true;
-                layer.mapLayer.setOpacity(DEFAULT_OPACITY);
+                layer.mapLayer.setOpacity(layer.opacity);
                 this.map.overlayMapTypes.push(layer.mapLayer);
               })
             }
@@ -374,8 +411,10 @@
           layers.forEach((layer, i) => {
             layer.gmapsLayer = null;
             layer.selected = layer.layer_id === selectedLayer;
-            layer.visible = layer.layer_id === selectedLayer;
-            layer.opacity = DEFAULT_OPACITY;
+            layer.visible = layer.show || layer.layer_id === selectedLayer;
+            if (layer.opacity === undefined) {
+              layer.opacity = DEFAULT_OPACITY;
+            }
           })
           return {
             place: '',
@@ -402,6 +441,19 @@
       })
       toastList.forEach(t => t.show())
       // $('.toast').toast('show', {autohide: false})
+
+      var infoModal = document.getElementById('infoModal')
+      infoModal.addEventListener('show.bs.modal', function (event) {
+        var el = event.relatedTarget;
+        var infoTitle = el.getAttribute('data-bs-info-title');
+        var infoBody = el.getAttribute('data-bs-info-body');
+        var modalTitle = infoModal.querySelector('.modal-title');
+        var modalBody = infoModal.querySelector('.modal-body');
+
+        modalTitle.textContent = infoTitle;
+        modalBody.textContent = infoBody;
+      });
+
     });
 
 

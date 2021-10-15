@@ -80,6 +80,12 @@ def get_image(collection_id, layer_id, coll_year=None):
     if collection_id == 'mountains':
         gmba_level_fc = ee.FeatureCollection(layer['id'])
         color_column = 'ColorBasic' if layer_id == 'basic' else 'ColorAll'
+        
+        # The new version of "standard - basic" has incorrect "ColorBasic" column format 
+        # (String instead of Long). Let's convert it.
+        if color_column == 'ColorBasic':
+            gmba_level_fc = gmba_level_fc.map(lambda f: f.set('ColorBasic', ee.Number.parse(f.get('ColorBasic'))))
+        
         imgOutline = ee.Image(0).mask(0).paint(gmba_level_fc, color_column).paint(gmba_level_fc, color_column, 1)
         
         return ee.Image(imgOutline), collection, layer
@@ -158,9 +164,6 @@ def vue(collection_id):
     
     if collection_id == 'tcf':
         return render_template('tcf.html', **map_info)
-    
-    # if collection_id == 'mountains':
-    #     return render_template('mountains.html', **map_info)
     
     return render_template('vue.html', **map_info)
 
@@ -273,14 +276,16 @@ def sample(collection_id, x, y):
                                 }
                             },
                         })
-    elif collection_id == 'mountains':
+    elif collection_id == 'mountains_all':
         result = {'features': []}
         v = collection['layers']['basic']
-        gmba_fc = ee.FeatureCollection('projects/map-of-life/regional/GMBA/v2/inventory_v2_20210916').filterBounds(ee.Geometry.Point([x, y]))
+        gmba_fc = ee.FeatureCollection('projects/map-of-life/regional/GMBA/v2/inventory_v203_standard')
+        gmba_fc = gmba_fc.filterBounds(ee.Geometry.Point([x, y])).sort('Level', False)
         gmba_fc_nogeom = gmba_fc.map(lambda f: ee.Feature(None).copyProperties(f))
         res = gmba_fc_nogeom.getInfo()
         if "features" in res:
             for f in res['features']:
+                WikiDataURL = f['properties']['WikiDataUR']
                 result['features'].append({
                     "type": "Feature",
                     "geometry": None,
@@ -294,15 +299,43 @@ def sample(collection_id, x, y):
                         "values": {
                             'MapName': f['properties']['MapName'],
                             'Countries': f['properties']['Countries'],
-                            'Path': f['properties']['Path'],
-                            'Area': f['properties']['Area'],
-                            'Elev_Low': f['properties']['Elev_Low'],
-                            'Elev_High': f['properties']['Elev_High'],
-                            'WikiDataID': f['properties']['WikiDataID'],
-                            'WikiDataURL': f['properties']['WikiDataUR'],
+                            'Area (km²)': f['properties']['Area'],
+                            'Elevation (m)': f['properties']['Elev_High'],
+                            'WikiDataID': WikiDataURL.split('/')[-1] if WikiDataURL else None,
+                            'WikiDataURL': WikiDataURL,
                         }
                     },
                 })
+    elif collection_id == 'mountains':
+        result = {'features': []}
+        for k in collection['layers']:
+            v = collection['layers'][k]
+            gmba_fc = ee.FeatureCollection(v['id']).filterBounds(ee.Geometry.Point([x, y])).sort('Level', False)
+            gmba_fc_nogeom = gmba_fc.map(lambda f: ee.Feature(None).copyProperties(f))
+            res = gmba_fc_nogeom.getInfo()
+            if "features" in res:
+                for f in res['features']:
+                    WikiDataURL = f['properties']['WikiDataUR']
+                    result['features'].append({
+                        "type": "Feature",
+                        "geometry": None,
+                        "id": "0",
+                        "properties": {
+                            "id": v["id"],
+                            "layer_id": v["layer_id"],
+                            "name": v["layer_id"],
+                            "show": v["show"],
+                            "title": v["title"],
+                            "values": {
+                                'MapName': f['properties']['MapName'],
+                                'Countries': f['properties']['Countries'],
+                                'Area (km²)': f['properties']['Area'],
+                                'Elevation (m)': f['properties']['Elev_High'],
+                                'WikiDataID': WikiDataURL.split('/')[-1] if WikiDataURL else None,
+                                'WikiDataURL': WikiDataURL,
+                            }
+                        },
+                    })
     else:
         for k in collection['layers']:
             v = collection['layers'][k]
