@@ -392,26 +392,24 @@
             var swap = false;
             // Sorting the layers based on layer index
             if (this.map.overlayMapTypes.getLength() >= 2) {
-              var last_layer = this.map.overlayMapTypes.getAt(this.map.overlayMapTypes.getLength() - 1)
+              var last_layer = this.map.overlayMapTypes.removeAt(this.map.overlayMapTypes.getLength() - 1)
               this.map.overlayMapTypes.forEach((x) => {
-                if (swap) {
-                  this.map.overlayMapTypes.setAt(index, last_layer)
-                  last_layer = x;
-                } else {
-                  // get the index of the current layer
-                  var currenti = this.layers.findIndex(layer => layer.mapLayer === x)
-                  // get index of the new layer
-                  var newi = this.layers.findIndex(layer => layer.mapLayer === last_layer)
-                  // compare the value of their indices according to the config file(index)
-                  // iterate until the new layers index is less than the current layers index
-                  if (this.layers[currenti].index >= this.layers[newi].index) {
-                    this.map.overlayMapTypes.setAt(index, last_layer)
-                    last_layer = x;
-                    swap = true;
-                  }
+                  if(!swap){
+                    var currenti = this.layers.findIndex(layer => layer.mapLayer === x)
+                    // get index of the new layer
+                    var newi = this.layers.findIndex(layer => layer.mapLayer === last_layer)
+                    // compare the value of their indices according to the config file(index)
+                    // iterate until the new layers index is less than the current layers index
+                    if (this.layers[currenti].index >= this.layers[newi].index) {
+                      this.map.overlayMapTypes.insertAt(index, last_layer)
+                      swap = true;
+                      }
                 }
                 index++;
               })
+              if(swap){
+                this.map.overlayMapTypes.insertAt(this.map.overlayMapTypes.getLength() - 1)
+              }
             }
           },
           paginator(i) {
