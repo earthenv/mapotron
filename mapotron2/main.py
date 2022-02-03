@@ -316,6 +316,17 @@ def sample(collection_id, x, y):
             if "features" in res:
                 for f in res['features']:
                     WikiDataURL = f['properties']['WikiDataUR']
+                    fvalues = {
+                                'MapName': f['properties']['MapName'],
+                                'Countries': f['properties']['Countries'],
+                                'Area (km²)': f['properties']['Area'],
+                                'Elevation (m)': f['properties']['Elev_High'],
+                                'WikiDataID': WikiDataURL.split('/')[-1] if WikiDataURL else None,
+                                'WikiDataURL': WikiDataURL,
+                            }
+                    if 'basic' in v['id']:
+                        fvalues['Path'] = f['properties']['Path']
+                    
                     result['features'].append({
                         "type": "Feature",
                         "geometry": None,
@@ -326,14 +337,7 @@ def sample(collection_id, x, y):
                             "name": v["layer_id"],
                             "show": v["show"],
                             "title": v["title"],
-                            "values": {
-                                'MapName': f['properties']['MapName'],
-                                'Countries': f['properties']['Countries'],
-                                'Area (km²)': f['properties']['Area'],
-                                'Elevation (m)': f['properties']['Elev_High'],
-                                'WikiDataID': WikiDataURL.split('/')[-1] if WikiDataURL else None,
-                                'WikiDataURL': WikiDataURL,
-                            }
+                            "values": fvalues
                         },
                     })
     else:
