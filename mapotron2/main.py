@@ -79,12 +79,12 @@ def get_image(collection_id, layer_id, coll_year=None):
 
     if collection_id == 'mountains':
         gmba_level_fc = ee.FeatureCollection(layer['id'])
-        color_column = 'ColorBasic' if layer_id == 'basic' else 'ColorAll'
+        color_column = 'ColorBasic' if layer_id == 'basic' else 'Color300'
         
-        # The new version of "standard - basic" has incorrect "ColorBasic" column format 
-        # (String instead of Long). Let's convert it.
-        if color_column == 'ColorBasic':
-            gmba_level_fc = gmba_level_fc.map(lambda f: f.set('ColorBasic', ee.Number.parse(f.get('ColorBasic'))))
+        # # The new version of "standard - basic" has incorrect "ColorBasic" column format 
+        # # (String instead of Long). Let's convert it.
+        # if color_column == 'ColorBasic':
+        #     gmba_level_fc = gmba_level_fc.map(lambda f: f.set('ColorBasic', ee.Number.parse(f.get('ColorBasic'))))
         
         imgOutline = ee.Image(0).mask(0).paint(gmba_level_fc, color_column).paint(gmba_level_fc, color_column, 1)
         

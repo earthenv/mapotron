@@ -4,7 +4,7 @@
       "id": "mountains", 
       "title": "GMBA Mountain Inventory v2", 
       "features": [{
-          "id": "projects/map-of-life/regional/GMBA/v2/inventory_v203_standard_300", 
+          "id": "projects/map-of-life/regional/GMBA/v2/inventory_v2_select300_20220207", 
           "viz_params": {
               "min": 1,
               "max": 6,
@@ -17,7 +17,7 @@
           "index": 1,
           "info": "Subset of 291 ('Standard') and 292 ('Broad') non overlapping major mountain systems and ranges"
       }, {
-          "id": "projects/map-of-life/regional/GMBA/v2/inventory_v203_standard_basic", 
+          "id": "projects/map-of-life/regional/GMBA/v2/inventory_v2_basic_20220207", 
           "viz_params": {
               "min": 1,
               "max": 6,
