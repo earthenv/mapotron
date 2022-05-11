@@ -698,6 +698,7 @@
           },
           "title": "Herbaceous vegetation (avg)",
           "layer_id": "Herbaceous_vegetation_(avg)",
+          "show": false, 
           "index": 0
         },
         {
@@ -710,6 +711,7 @@
           },
           "title": "Annual sum of precipitation (avg)",
           "layer_id": "Annual_sum_of_precipitation_(avg)",
+          "show": false, 
           "index": 1
         },
         {
@@ -722,6 +724,7 @@
           },
           "title": "Cultivated and managed vegetation (avg)",
           "layer_id": "Cultivated_and_managed_vegetation_(avg)",
+          "show": false, 
           "index": 2
         },
         {
@@ -734,6 +737,7 @@
           },
           "title": "Precipitation seasonality (avg)",
           "layer_id": "Precipitation_seasonality_(avg)",
+          "show": true, 
           "index": 3
         },
         {
@@ -746,6 +750,7 @@
           },
           "title": "Precambrian surface lithology (wsum)",
           "layer_id": "Precambrian_surface_lithology_(wsum)",
+          "show": false, 
           "index": 4
         },
         {
@@ -758,6 +763,7 @@
           },
           "title": "Elevation range",
           "layer_id": "Elevation_range",
+          "show": false, 
           "index": 5
         },
         {
@@ -770,6 +776,7 @@
           },
           "title": "Catchment size (sum)",
           "layer_id": "Catchment_size_(sum)",
+          "show": false, 
           "index": 6
         },
         {
@@ -782,6 +789,7 @@
           },
           "title": "Annual air temperature range (avg)",
           "layer_id": "Annual_air_temperature_range_(avg)",
+          "show": false, 
           "index": 7
         },
         {
@@ -794,6 +802,7 @@
           },
           "title": "Elevation (avg)",
           "layer_id": "Elevation_(avg)",
+          "show": false, 
           "index": 8
         },
         {
@@ -806,6 +815,7 @@
           },
           "title": "Evergreen broadleaf trees (avg)",
           "layer_id": "Evergreen_broadleaf_trees_(avg)",
+          "show": false, 
           "index": 9
         },
         {
@@ -818,6 +828,7 @@
           },
           "title": "Regularly flooded shrub herbaceous vegetation (avg)",
           "layer_id": "Regularly_flooded_shrub_herbaceous_vegetation_(avg)",
+          "show": false, 
           "index": 10
         },
         {
@@ -830,6 +841,7 @@
           },
           "title": "Evergreen deciduous needleleaf trees (avg)",
           "layer_id": "Evergreen_deciduous_needleleaf_trees_(avg)",
+          "show": false, 
           "index": 11
         },
         {
@@ -842,6 +854,7 @@
           },
           "title": "Barren lands sparse vegetation (avg)",
           "layer_id": "Barren_lands_sparse_vegetation_(avg)",
+          "show": false, 
           "index": 12
         },
         {
@@ -854,6 +867,7 @@
           },
           "title": "Slope range",
           "layer_id": "Slope_range",
+          "show": false, 
           "index": 13
         },
         {
@@ -866,6 +880,7 @@
           },
           "title": "Quaternary surface lithology (wsum)",
           "layer_id": "Quaternary_surface_lithology_(wsum)",
+          "show": false, 
           "index": 14
         },
         {
@@ -878,6 +893,7 @@
           },
           "title": "Stream length (sum)",
           "layer_id": "Stream_length_(sum)",
+          "show": false, 
           "index": 15
         },
         {
@@ -890,6 +906,7 @@
           },
           "title": "Slope (avg)",
           "layer_id": "Slope_(avg)",
+          "show": false, 
           "index": 16
         },
         {
@@ -902,6 +919,7 @@
           },
           "title": "Urban builtup (avg)",
           "layer_id": "Urban_builtup_(avg)",
+          "show": false, 
           "index": 17
         },
         {
@@ -914,6 +932,7 @@
           },
           "title": "Mean annual air temperature (avg)",
           "layer_id": "Mean_annual_air_temperature_(avg)",
+          "show": false, 
           "index": 18
         },
         {
@@ -926,6 +945,7 @@
           },
           "title": "Shrubs (avg)",
           "layer_id": "Shrubs_(avg)",
+          "show": false, 
           "index": 19
         },
         {
@@ -938,6 +958,7 @@
           },
           "title": "Open water (avg)",
           "layer_id": "Open_water_(avg)",
+          "show": false, 
           "index": 20
         },
         {
@@ -950,6 +971,7 @@
           },
           "title": "Mixed other trees (avg)",
           "layer_id": "Mixed_other_trees_(avg)",
+          "show": false, 
           "index": 21
         },
         {
@@ -962,6 +984,7 @@
           },
           "title": "Deciduous broadleaf trees (avg)",
           "layer_id": "Deciduous_broadleaf_trees_(avg)",
+          "show": false, 
           "index": 22
         },
         {
@@ -974,6 +997,7 @@
           },
           "title": "Snow/ice (avg)",
           "layer_id": "Snow-ice_(avg)",
+          "show": false, 
           "index": 23
         }
       ]
@@ -1059,6 +1083,7 @@
           },
           "title": "Herbaceous Vegetation",
           "layer_id": "Herbaceous_Vegetation",
+          "show": true, 
           "index": 5
         },
         {
@@ -1168,6 +1193,7 @@
           },
           "layer_id": "range1km",
           "title": "range1km",
+          "show": true,
           "index": 1
         },
         {

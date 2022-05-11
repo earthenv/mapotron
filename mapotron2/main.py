@@ -32,7 +32,7 @@ def get_image(collection_id, layer_id, coll_year=None):
     collection = ee_config.collections[collection_id]
     if layer_id is None:
         show = [k for k in collection['layers']
-                if collection['layers'][k]['show']]
+                if 'show' in collection['layers'][k] and collection['layers'][k]['show']]
 
         if len(show) > 0:
             layer_id = show[0]
